@@ -1,0 +1,281 @@
+TOURIST MODULE 
+Tourist Dashboard
+SECTIONS
+My Trips
+Book Transport
+Book Hotel(optional)
+Create Itinerary
+Profile
+Log out
+My Trips
+Route:
+/tourist/my-trips
+Tabs:
+Upcoming
+Ongoing
+Completed
+Cancelled
+Click any trip →
+/tourist/booking/{id}
+Options:
+Download invoice
+Cancel (if eligible)
+Add review
+Book transport
+             Form:
+From
+To
+Date
+Return date (optional)
+Travelers
+Class
+Submit → Redirect to:
+Step 2:
+/tourist/transport/results
+Show:
+Filters (price, stops, airline)
+Sorting
+Click “Book” →
+Step 3:
+/tourist/transport/review/{transport_id}
+Show:
+Trip details
+Fare breakdown
+Traveler details form
+Click “Proceed to Payment” →
+Step 4:
+/tourist/payment/{booking_id}
+Payment methods:
+UPI
+Card
+Net banking
+On Success →
+Step 5:
+/tourist/booking/success/{booking_id}
+Show:
+Booking confirmation
+Booking ID
+Download ticket
+Add to itinerary (optional)
+Book hotel (optional)
+Search:
+Location
+Check-in
+Check-out
+Guests
+Submit →
+Step 2:
+/tourist/hotels/results
+Click hotel →
+Select room →
+Step 4:
+/tourist/hotels/review/{room_id}
+Confirm details → Proceed to Payment →
+Step 5:
+Payment → Success Page
+Create Itenary 
+Step 1:
+/tourist/itinerary
+Shows:
+List of saved itineraries
+Create New button
+Step 2:
+/tourist/itinerary/create
+Form:
+Trip Name
+Destination
+Start Date
+End Date
+Submit →
+Step 3:
+/tourist/itinerary/{id}
+Inside itinerary:
+Tabs:
+Overview
+Add Transport
+Add Hotel
+Add Activity
+User can:
+Attach existing bookings
+Add notes
+See total cost auto-calculated
+Profile
+Dropdown from navbar:
+My Profile → 
+/tourist/profile
+Change Password
+My Payments
+Logout
+Profile page:
+Edit personal details
+View saved addresses
+Log out
+Back to log in page
+COMPLETE USER JOURNEY
+Signup
+↓
+Login
+↓
+Dashboard
+↓
+Search
+↓
+View Results
+↓
+Review
+↓
+Payment
+↓
+Confirmation
+↓
+Trip visible in My Trips
+↓
+Optionally add to Itinerary
+↓
+Log out
+STATE DIAGRAM
+ADMIN MODULE
+Admin Dashboard
+SECTIONS
+User management
+Manage Hotels
+Manage Transport
+Manage booking
+Profile
+Log out
+User Management
+Route:
+/admin/users
+Page Shows:
+Table of all users
+Search by name/email
+Filter (Active / Blocked / Admin / Tourist)
+Pagination
+When Admin Clicks a User:
+Route:
+/admin/users/{id}
+Shows:
+User profile details
+Role (Tourist/Admin)
+Account status
+Total bookings
+Payment history
+Login history (optional)
+Admin Actions Available:
+Block User
+Unblock User
+Delete User
+Change Role (if allowed)
+Reset Password (optional)
+View User Bookings
+After any action → redirect back to user details page.
+User Management Flow:
+ 
+Dashboard
+↓
+User Management
+↓
+View Users List
+↓
+Select User
+↓
+Perform Action
+↓
+Save Changes
+↓
+Return to Users List
+Manage Hotels
+Route:
+/admin/hotels
+Shows:
+All hotels
+Status (Active / Disabled)
+Edit / Delete buttons
+Add Hotel:
+/admin/hotels/add
+Form:
+Name
+Location
+Description
+Price per night
+Amenities
+Images
+Rooms available
+Submit → Save → Redirect to hotel list.
+Edit Hotel:
+/admin/hotels/edit/{id}
+Update:
+Price
+Room availability
+Amenities
+Status
+Delete Hotel:
+Confirmation popup → Remove from DB.
+Manage Transport
+Route:
+/admin/transport
+Shows:
+Flights
+Trains
+Buses
+Status
+Seats available
+Add Transport:
+/admin/transport/add
+Fields:
+Type (Flight/Train/Bus)
+Source
+Destination
+Date
+Time
+Price
+Seat count
+Edit Transport:
+/admin/transport/edit/{id}
+Can update:
+Timing
+Price
+Seats
+Status
+Manage Bookings
+Route:
+/admin/bookings
+Table includes:
+Booking ID
+User
+Type
+Date
+Payment status
+Booking status
+Click Booking:
+/admin/bookings/{id}
+Admin can:
+View full details
+Force cancel booking
+Approve cancellation
+Mark as completed
+Profile
+Route:
+/admin/profile
+Admin can:
+Change password
+Update email
+Enable 2FA
+Log out
+COMPLETE ADMIN FLOW
+Login
+↓
+Dashboard
+↓
+Choose Module (Users / Hotels / Transport / etc.)
+↓
+View List
+↓
+Perform Action (Add/Edit/Delete/Approve/Block)
+↓
+Save Changes
+↓
+Return to Dashboard
+Logout → End session
+State Diagram
+
