@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QuestLog - Your Travel Companion</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">QuestLog</div>
+      <ul class="nav-menu">
+        <li><a href="#home" class="nav-link">Home</a></li>
+        <li><a href="#explore" class="nav-link">Explore</a></li>
+        <li>
+          <button id="loginBtn" class="nav-link nav-login">Login</button>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="login-modal hidden">
+    <div class="modal-blur"></div>
+    <div class="modal-content">
+      <button id="closeLoginModal" class="modal-close">&times;</button>
+
+      <!-- Auth Message Container -->
+      <div id="authMessage"
+        style="display: none; padding: 10px; margin-bottom: 15px; border-radius: 5px; text-align: center;"></div>
+
+      <!-- Login Form (Default) -->
+      <form id="loginForm" class="auth-form active" action="api/auth/login.php" method="POST">
+        <h2>Login</h2>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" name="email" required placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="loginPassword" name="password" required placeholder="••••••••" />
+            <button type="button" class="show-password-btn" data-target="loginPassword">
+              👁️
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="auth-btn">Login</button>
+        <p class="toggle-form-link">
+          Don't have an account?
+          <button type="button" id="toggleToSignup" class="link-btn">
+            Sign Up
+          </button>
+        </p>
+      </form>
+
+      <!-- Signup Form (Hidden) -->
+      <form id="signupForm" class="auth-form" action="api/auth/signup.php" method="POST">
+        <h2>Sign Up</h2>
+        <div class="form-group">
+          <label for="signupName">Full Name</label>
+          <input type="text" id="signupName" name="name" required placeholder="John Doe" />
+        </div>
+        <div class="form-group">
+          <label for="signupEmail">Email</label>
+          <input type="email" id="signupEmail" name="email" required placeholder="you@example.com" />
+        </div>
+        <div class="form-group">
+          <label for="signupAddress">Address</label>
+          <input type="text" id="signupAddress" name="address" required placeholder="123 Main St" />
+        </div>
+        <div class="form-group">
+          <label for="signupCountry">Country</label>
+          <select id="signupCountry" name="country" required>
+            <option value="">Select Country</option>
+            <option value="IN">India</option>
+            <option value="US">United States</option>
+            <option value="CA">Canada</option>
+            <option value="AU">Australia</option>
+            <option value="GB">United Kingdom</option>
+            <option value="NZ">New Zealand</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+        <!-- Custom Country Name Input (shown only when "Other" is selected) -->
+        <div class="form-group" id="countryNameGroup" style="display: none">
+          <label for="signupCountryName">Country Name</label>
+          <input type="text" id="signupCountryName" name="countryName" placeholder="Enter your country" />
+        </div>
+        <div class="form-group">
+          <label id="stateLabel" for="signupState">State / Region</label>
+          <!-- State Dropdown (hidden by default) -->
+          <select id="signupStateDropdown" name="state" class="state-field" style="display: none">
+            <option value="">Select State</option>
+          </select>
+          <!-- State Text Input (hidden by default) -->
+          <input type="text" id="signupStateInput" name="state" class="state-field" style="display: none"
+            placeholder="State / Province / Region" />
+        </div>
+        <div class="form-group">
+          <label for="signupMobile">Mobile Number</label>
+          <input type="tel" id="signupMobile" name="mobile" required placeholder="+1 (555) 000-0000" />
+        </div>
+        <div class="form-group">
+          <label for="signupPassword">Password</label>
+          <div class="password-wrapper">
+            <input type="password" id="signupPassword" name="password" required placeholder="••••••••" />
+            <button type="button" class="show-password-btn" data-target="signupPassword">
+              👁️
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="auth-btn">Sign Up</button>
+        <p class="toggle-form-link">
+          Already have an account?
+          <button type="button" id="toggleToLogin" class="link-btn">
+            Login
+          </button>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <main id="main" data-scroll-container>
+    <div class="hero" data-scroll-section>
+      <img id="mountbg" src="assets/background_balitemple.png" alt="background" data-scroll data-scroll-speed="-2" />
+      <div class="hero-texts">
+        <h1 id="title" class="fade-in" data-scroll data-scroll-speed="1">
+          QUESTLOG
+        </h1>
+        <p id="subtitle" class="fade-in" data-scroll data-scroll-speed="1.5">
+          Find your Home,<br />Away From Home
+        </p>
+        <button id="exploreBtn" class="explore-btn" data-scroll data-scroll-speed="2">
+          Explore more
+        </button>
+      </div>
+      <div class="side-grid" aria-hidden="false" data-scroll data-scroll-speed="1">
+        <div class="grid-cell empty"></div>
+        <div class="grid-cell">
+          <img id="b1i1" class="grid-img" src="assets/b1i1.png" alt="b1i1" />
+        </div>
+        <div class="grid-cell">
+          <img id="b1i3" class="grid-img" src="assets/b1i3.png" alt="b1i3" />
+        </div>
+        <div class="grid-cell">
+          <img id="b1i2" class="grid-img" src="assets/b1i2.png" alt="b1i2" />
+        </div>
+      </div>
+    </div>
+
+    <section id="b2" class="section" data-scroll-section>
+      <!-- full-screen second video -->
+      <video id="b2video" autoplay muted loop playsinline>
+        <source src="assets/temple_video.mp4" type="video/mp4" />
+        <!-- fallback image -->
+        <img src="assets/b2.png" alt="b2" />
+      </video>
+
+      <!-- Content overlay -->
+      <div class="b2-content">
+        <div class="b2-text-container">
+          <div class="b2-head-wrap">
+            <h1 class="b2-heading">
+              Your End-to-End Travel Itinerary Planning Platform
+            </h1>
+            <p class="b2-subheading">
+              Plan, Book, and Travel with Ease — All in One Place.
+            </p>
+          </div>
+
+          <p class="b2-description">
+            QuestLog is your complete travel companion. Book trains, flights,
+            and buses, reserve accommodations at premium hotels, create
+            personalized itineraries tailored to your preferences, and manage
+            all your activities and daily plans in one unified dashboard. From
+            start to finish, every aspect of your journey is organized,
+            seamless, and effortless.
+          </p>
+
+          <div class="b2-features">
+            <div class="feature-card">
+              <div class="feature-icon">✈️</div>
+              <h3>Book Trains, Flights & Buses</h3>
+              <p>
+                Seamless ticket booking across multiple transport options.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🏨</div>
+              <h3>Find & Reserve Hotels</h3>
+              <p>Discover and book accommodations effortlessly.</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📋</div>
+              <h3>Personalized Itineraries</h3>
+              <p>
+                Create and customize travel plans tailored to your
+                preferences.
+              </p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📅</div>
+              <h3>Organize & Manage Activities</h3>
+              <p>
+                Schedule tours, experiences, and daily plans in one dashboard.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/locomotive-scroll@4.1.4/dist/locomotive-scroll.min.js"></script>
+  <script>
+    // Init Locomotive + GSAP ScrollTrigger
+    gsap.registerPlugin(ScrollTrigger);
+
+    const locoScroll = new LocomotiveScroll({
+      el: document.querySelector("[data-scroll-container]"),
+      smooth: true,
+      smartphone: { smooth: true },
+      tablet: { smooth: true },
+    });
+
+    locoScroll.on("scroll", ScrollTrigger.update);
+
+    ScrollTrigger.scrollerProxy("[data-scroll-container]", {
+      scrollTop(value) {
+        return arguments.length
+          ? locoScroll.scrollTo(value, 0, 0)
+          : locoScroll.scroll.instance.scroll.y;
+      },
+      getBoundingClientRect() {
+        return {
+          top: 0,
+          left: 0,
+          width: window.innerWidth,
+          height: window.innerHeight,
+        };
+      },
+      pinType: document.querySelector("[data-scroll-container]").style
+        .transform
+        ? "transform"
+        : "fixed",
+    });
+
+    ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
+    ScrollTrigger.refresh();
+
+    // GSAP Animations
+    gsap.fromTo(".nav-container",
+      { y: -50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
+    );
+
+    gsap.fromTo(".b2-head-wrap",
+      { y: 50, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: "#b2",
+          scroller: "[data-scroll-container]",
+          start: "top 80%",
+        },
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        ease: "power3.out",
+      }
+    );
+
+    gsap.fromTo(".feature-card",
+      { y: 50, opacity: 0 },
+      {
+        scrollTrigger: {
+          trigger: ".b2-features",
+          scroller: "[data-scroll-container]",
+          start: "top 85%",
+        },
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
+        stagger: 0.2,
+        ease: "power3.out",
+      }
+    );
+
+    // Navigation link handlers
+    (function () {
+      const navLinks = document.querySelectorAll(".nav-link");
+      const hero = document.querySelector(".hero");
+      const b2 = document.getElementById("b2");
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          const href = link.getAttribute("href");
+          if (href === "#home" && hero) {
+            e.preventDefault();
+            locoScroll.scrollTo(hero);
+          } else if (href === "#explore" && b2) {
+            e.preventDefault();
+            locoScroll.scrollTo(b2);
+          }
+        });
+      });
+    })();
+
+    // Login modal handlers
+    (function () {
+      const loginBtn = document.getElementById("loginBtn");
+      const loginModal = document.getElementById("loginModal");
+      const closeLoginModal = document.getElementById("closeLoginModal");
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const toggleToSignup = document.getElementById("toggleToSignup");
+      const toggleToLogin = document.getElementById("toggleToLogin");
+      const showPasswordBtns =
+        document.querySelectorAll(".show-password-btn");
+
+      // Prevent background scroll when modal is open
+      function preventScroll(e) {
+        e.preventDefault();
+      }
+
+      if (loginBtn && loginModal) {
+        loginBtn.addEventListener("click", () => {
+          loginModal.classList.remove("hidden");
+          document.documentElement.style.overflow = "hidden";
+          document.body.style.overflow = "hidden";
+          document.addEventListener("wheel", preventScroll, {
+            passive: false,
+          });
+          document.addEventListener("touchmove", preventScroll, {
+            passive: false,
+          });
+        });
+      }
+      if (closeLoginModal && loginModal) {
+        closeLoginModal.addEventListener("click", () => {
+          loginModal.classList.add("hidden");
+          document.documentElement.style.overflow = "auto";
+          document.body.style.overflow = "auto";
+          document.removeEventListener("wheel", preventScroll);
+          document.removeEventListener("touchmove", preventScroll);
+        });
+      }
+      if (loginModal) {
+        loginModal.addEventListener("click", (e) => {
+          if (e.target === loginModal) {
+            loginModal.classList.add("hidden");
+            document.documentElement.style.overflow = "auto";
+            document.body.style.overflow = "auto";
+            document.removeEventListener("wheel", preventScroll);
+            document.removeEventListener("touchmove", preventScroll);
+          }
+        });
+      }
+
+      // Form toggle handlers
+      if (toggleToSignup) {
+        toggleToSignup.addEventListener("click", (e) => {
+          e.preventDefault();
+          loginForm.classList.remove("active");
+          signupForm.classList.add("active");
+        });
+      }
+      if (toggleToLogin) {
+        toggleToLogin.addEventListener("click", (e) => {
+          e.preventDefault();
+          signupForm.classList.remove("active");
+          loginForm.classList.add("active");
+        });
+      }
+
+      // Show/hide password functionality
+      showPasswordBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.preventDefault();
+          const targetId = btn.getAttribute("data-target");
+          const input = document.getElementById(targetId);
+          if (input.type === "password") {
+            input.type = "text";
+            btn.textContent = "👁️‍🗨️";
+          } else {
+            input.type = "password";
+            btn.textContent = "👁️";
+          }
+        });
+      });
+
+      // Country-based state field logic
+      const indianStates = [
+        "Andhra Pradesh",
+        "Arunachal Pradesh",
+        "Assam",
+        "Bihar",
+        "Chhattisgarh",
+        "Goa",
+        "Gujarat",
+        "Haryana",
+        "Himachal Pradesh",
+        "Jharkhand",
+        "Karnataka",
+        "Kerala",
+        "Madhya Pradesh",
+        "Maharashtra",
+        "Manipur",
+        "Meghalaya",
+        "Mizoram",
+        "Nagaland",
+        "Odisha",
+        "Punjab",
+        "Rajasthan",
+        "Sikkim",
+        "Tamil Nadu",
+        "Telangana",
+        "Tripura",
+        "Uttar Pradesh",
+        "Uttarakhand",
+        "West Bengal",
+        "Andaman and Nicobar Islands",
+        "Chandigarh",
+        "Dadra and Nagar Haveli and Daman and Diu",
+        "Lakshadweep",
+        "Delhi",
+        "Puducherry",
+      ];
+
+      const usStates = [
+        "Alabama",
+        "Alaska",
+        "Arizona",
+        "Arkansas",
+        "California",
+        "Colorado",
+        "Connecticut",
+        "Delaware",
+        "Florida",
+        "Georgia",
+        "Hawaii",
+        "Idaho",
+        "Illinois",
+        "Indiana",
+        "Iowa",
+        "Kansas",
+        "Kentucky",
+        "Louisiana",
+        "Maine",
+        "Maryland",
+        "Massachusetts",
+        "Michigan",
+        "Minnesota",
+        "Mississippi",
+        "Missouri",
+        "Montana",
+        "Nebraska",
+        "Nevada",
+        "New Hampshire",
+        "New Jersey",
+        "New Mexico",
+        "New York",
+        "North Carolina",
+        "North Dakota",
+        "Ohio",
+        "Oklahoma",
+        "Oregon",
+        "Pennsylvania",
+        "Rhode Island",
+        "South Carolina",
+        "South Dakota",
+        "Tennessee",
+        "Texas",
+        "Utah",
+        "Vermont",
+        "Virginia",
+        "Washington",
+        "West Virginia",
+        "Wisconsin",
+        "Wyoming",
+      ];
+
+      const countrySelect = document.getElementById("signupCountry");
+      const countryNameGroup = document.getElementById("countryNameGroup");
+      const countryNameInput = document.getElementById("signupCountryName");
+      const stateLabel = document.getElementById("stateLabel");
+      const stateDropdown = document.getElementById("signupStateDropdown");
+      const stateInput = document.getElementById("signupStateInput");
+
+      if (countrySelect) {
+        countrySelect.addEventListener("change", (e) => {
+          const country = e.target.value;
+          stateDropdown.innerHTML = '<option value="">Select State</option>';
+          stateDropdown.style.display = "none";
+          stateInput.style.display = "none";
+          countryNameGroup.style.display = "none";
+          stateDropdown.required = false;
+          stateInput.required = false;
+          countryNameInput.required = false;
+
+          if (country === "IN") {
+            stateLabel.textContent = "State / Union Territory";
+            indianStates.forEach((state) => {
+              const option = document.createElement("option");
+              option.value = state;
+              option.textContent = state;
+              stateDropdown.appendChild(option);
+            });
+            stateDropdown.style.display = "block";
+            stateDropdown.required = true;
+          } else if (country === "US") {
+            stateLabel.textContent = "State";
+            usStates.forEach((state) => {
+              const option = document.createElement("option");
+              option.value = state;
+              option.textContent = state;
+              stateDropdown.appendChild(option);
+            });
+            stateDropdown.style.display = "block";
+            stateDropdown.required = true;
+          } else if (country && country !== "OTHER") {
+            stateLabel.textContent = "State / Province / Region";
+            stateInput.style.display = "block";
+            stateInput.required = true;
+          } else if (country === "OTHER") {
+            countryNameGroup.style.display = "block";
+            countryNameInput.required = true;
+            stateLabel.textContent = "State / Province / Region";
+            stateInput.style.display = "block";
+            stateInput.required = true;
+          }
+        });
+      }
+    })();
+
+    (function () {
+      const img = document.getElementById("mountbg");
+      const title = document.getElementById("title");
+      const subtitle = document.getElementById("subtitle");
+
+      function revealGrid() {
+        const i1 = document.getElementById("b1i1");
+        const i3 = document.getElementById("b1i3");
+        const i2 = document.getElementById("b1i2");
+        const start = 1800;
+        if (i1) {
+          setTimeout(() => {
+            i1.classList.add("visible");
+            i1.parentElement.classList.add("visible");
+          }, start + 0);
+        }
+        if (i3) {
+          setTimeout(() => {
+            i3.classList.add("visible");
+            i3.parentElement.classList.add("visible");
+          }, start + 300);
+        }
+        if (i2) {
+          setTimeout(() => {
+            i2.classList.add("visible");
+            i2.parentElement.classList.add("visible");
+          }, start + 600);
+        }
+        // show explore button shortly after images reveal
+        const exploreBtn = document.getElementById("exploreBtn");
+        if (exploreBtn)
+          setTimeout(() => exploreBtn.classList.add("visible"), start + 750);
+      }
+
+      function revealTexts() {
+        setTimeout(() => title.classList.add("visible"), 1000);
+        setTimeout(() => subtitle.classList.add("visible"), 1500);
+        // schedule grid reveal slightly after subtitle
+        setTimeout(revealGrid, 1700);
+      }
+
+      // If the background media is a video, wait for it to be ready; otherwise handle images
+      if (img && img.tagName === "VIDEO") {
+        if (img.readyState >= 3) {
+          // HAVE_FUTURE_DATA / enough to play
+          revealTexts();
+        } else {
+          img.addEventListener("loadeddata", revealTexts);
+          window.addEventListener("load", () => {
+            if (!title.classList.contains("visible")) revealTexts();
+          });
+        }
+      } else {
+        // image fallback
+        if (img && img.complete) {
+          revealTexts();
+        } else if (img) {
+          img.addEventListener("load", revealTexts);
+          window.addEventListener("load", () => {
+            if (!title.classList.contains("visible")) revealTexts();
+          });
+        } else {
+          // no media element found: still reveal texts after load
+          window.addEventListener("load", revealTexts);
+        }
+      }
+
+      // Explore button: scroll to #b2
+      const explore = document.getElementById("exploreBtn");
+      if (explore) {
+        explore.addEventListener("click", () => {
+          const target = document.getElementById("b2");
+          if (target) locoScroll.scrollTo(target);
+        });
+      }
+
+      // Snap scroll handling (Full section transition)
+      let isSnapping = false;
+      let touchStartY = 0;
+
+      function snapToSection(direction) {
+        if (isSnapping) return;
+        isSnapping = true;
+
+        if (direction === "down") {
+          locoScroll.scrollTo("#b2", { duration: 1000, disableLerp: false });
+        } else if (direction === "up") {
+          locoScroll.scrollTo(".hero", { duration: 1000, disableLerp: false });
+        }
+
+        setTimeout(() => { isSnapping = false; }, 1200);
+      }
+
+      window.addEventListener("wheel", (e) => {
+        if (isSnapping) return;
+        if (e.deltaY > 30) snapToSection("down");
+        else if (e.deltaY < -30) snapToSection("up");
+      }, { passive: true });
+
+      window.addEventListener("touchstart", (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+
+      window.addEventListener("touchend", (e) => {
+        if (isSnapping) return;
+        const touchEndY = e.changedTouches[0].clientY;
+        const diff = touchStartY - touchEndY;
+
+        if (diff > 40) snapToSection("down");
+        else if (diff < -40) snapToSection("up");
+      }, { passive: true });
+    })();
+
+    (function () {
+      const loginForm = document.getElementById("loginForm");
+      const signupForm = document.getElementById("signupForm");
+      const authMessage = document.getElementById("authMessage");
+
+      function showMessage(msg, isSuccess) {
+        authMessage.textContent = msg;
+        authMessage.style.display = "block";
+        authMessage.style.backgroundColor = isSuccess ? "#d4edda" : "#f8d7da";
+        authMessage.style.color = isSuccess ? "#155724" : "#721c24";
+        authMessage.style.border = `1px solid ${isSuccess ? "#c3e6cb" : "#f5c6cb"}`;
+      }
+
+      async function handleFormSubmit(e, formElement, url) {
+        e.preventDefault();
+        const formData = new FormData(formElement);
+        const data = Object.fromEntries(formData.entries());
+
+        try {
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            showMessage(result.message, true);
+            if (result.data && result.data.redirect) {
+              setTimeout(() => window.location.href = result.data.redirect, 1500);
+            } else if (formElement.id === 'signupForm') {
+              // Wait briefly, then switch to login view
+              setTimeout(() => {
+                document.getElementById("toggleToLogin").click();
+                showMessage("Please log in with your new account.", true);
+              }, 1500);
+            }
+          } else {
+            showMessage(result.message || "An error occurred.", false);
+          }
+        } catch (error) {
+          console.error(error);
+          showMessage("A network error occurred. Please try again.", false);
+        }
+      }
+
+      if (loginForm) {
+        loginForm.addEventListener("submit", (e) => handleFormSubmit(e, loginForm, 'api/auth/login.php'));
+      }
+
+      if (signupForm) {
+        signupForm.addEventListener("submit", (e) => handleFormSubmit(e, signupForm, 'api/auth/signup.php'));
+      }
+    })();
+  </script>
+</body>
+
+</html>
