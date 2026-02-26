@@ -55,8 +55,8 @@ if ($type === 'hotel') {
     $date = isset($_GET['date']) ? sanitizeInput($_GET['date']) : '';
 
     try {
-        $sql = "SELECT id, type, source, destination, departure_date, departure_time, price, available_seats FROM transports WHERE status = 'Active' AND type = ucfirst(?)";
-        $params = [$type];
+        $sql = "SELECT id, type, source, destination, departure_date, departure_time, price, available_seats FROM transports WHERE status = 'Active' AND type = ?";
+        $params = [ucfirst($type)];
 
         if (!empty($source)) {
             $sql .= " AND source LIKE ?";

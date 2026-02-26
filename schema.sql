@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS hotels (
 -- Transports Table
 CREATE TABLE IF NOT EXISTS transports (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    type ENUM('Flight', 'Train', 'Bus') NOT NULL,
+    type ENUM('Flight', 'Train') NOT NULL,
     source VARCHAR(255) NOT NULL,
     destination VARCHAR(255) NOT NULL,
     departure_date DATE NOT NULL,
@@ -55,10 +55,10 @@ CREATE TABLE IF NOT EXISTS bookings (
     booking_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     start_date DATE, -- For Hotel Check-in
     end_date DATE, -- For Hotel Check-out
-    guests_count INT DEFAULT 1,
+    guests_count INT NOT NULL DEFAULT 1,
     total_amount DECIMAL(10, 2) NOT NULL,
-    payment_status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
-    booking_status ENUM('Confirmed', 'Cancelled', 'Completed') DEFAULT 'Confirmed',
+    payment_status ENUM('Pending', 'Completed', 'Failed', 'Refunded') NOT NULL DEFAULT 'Pending',
+    booking_status ENUM('Pending Payment', 'Confirmed', 'Cancelled', 'Completed') NOT NULL DEFAULT 'Pending Payment',
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     -- Note: entity_id is a programmatic foreign key because it can link to two different tables
 );
@@ -105,10 +105,11 @@ CREATE TABLE IF NOT EXISTS payments (
     booking_id INT NOT NULL,
     user_id INT NOT NULL,
     amount DECIMAL(10, 2) NOT NULL,
-    payment_method VARCHAR(50),
-    payment_status ENUM('Success', 'Failed') DEFAULT 'Success',
-    transaction_id VARCHAR(255),
+    payment_method VARCHAR(50) NOT NULL,
+    payment_status ENUM('Success', 'Failed') NOT NULL DEFAULT 'Success',
+    transaction_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (transaction_id),
     FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

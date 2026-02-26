@@ -125,21 +125,59 @@
             <section id="trips-section" class="content-section">
                 <div class="card">
                     <h3>Your Bookings</h3>
-                    <table id="bookingsTable">
-                        <thead>
-                            <tr>
-                                <th>Booking ID</th>
-                                <th>Type</th>
-                                <th>Details</th>
-                                <th>Date</th>
-                                <th>Amount</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
+                    <div class="tabs" style="margin-bottom: 15px;">
+                        <button class="btn tab-btn active" data-tab="all">All</button>
+                        <button class="btn tab-btn" data-tab="hotels">Hotels</button>
+                        <button class="btn tab-btn" data-tab="transports">Transport</button>
+                    </div>
+
+                    <div id="tab-content-all" class="tab-pane active">
+                        <table id="bookingsTableAll">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="tab-content-hotels" class="tab-pane" style="display:none;">
+                        <table id="bookingsTableHotels">
+                            <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Hotel</th>
+                                    <th>Location</th>
+                                    <th>Check-in</th>
+                                    <th>Check-out</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                    <div id="tab-content-transports" class="tab-pane" style="display:none;">
+                        <table id="bookingsTableTransports">
+                             <thead>
+                                <tr>
+                                    <th>Booking ID</th>
+                                    <th>Type</th>
+                                    <th>Route</th>
+                                    <th>Departure</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
 
@@ -151,10 +189,26 @@
                         <select name="type" required>
                             <option value="flight">Flight</option>
                             <option value="train">Train</option>
-                            <option value="bus">Bus</option>
                         </select>
-                        <input type="text" name="source" placeholder="Source" required />
-                        <input type="text" name="destination" placeholder="Destination" required />
+                        <input type="text" name="source" list="source-list" placeholder="Source" required />
+                        <datalist id="source-list">
+                            <option value="New York">
+                            <option value="London">
+                            <option value="Paris">
+                            <option value="Tokyo">
+                            <option value="Mumbai">
+                            <option value="Delhi">
+                            <option value="Bali">
+                        </datalist>
+                        <input type="text" name="destination" list="dest-list" placeholder="Destination" required />
+                        <datalist id="dest-list">
+                            <option value="Los Angeles">
+                            <option value="New York">
+                            <option value="Paris">
+                            <option value="London">
+                            <option value="Singapore">
+                            <option value="Bali">
+                        </datalist>
                         <input type="date" name="date" required />
                         <button type="submit" class="btn">Search</button>
                     </form>
@@ -167,7 +221,14 @@
                 <div class="card">
                     <h3>Search Hotels</h3>
                     <form id="searchHotelsForm" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                        <input type="text" name="location" placeholder="Location City" required />
+                        <input type="text" name="location" list="location-list" placeholder="Location City" required />
+                        <datalist id="location-list">
+                            <option value="Bali">
+                            <option value="Paris">
+                            <option value="London">
+                            <option value="New York">
+                            <option value="Mumbai">
+                        </datalist>
                         <button type="submit" class="btn">Search</button>
                     </form>
                     <div id="hotelResults"></div>
@@ -255,32 +316,293 @@
             });
         });
 
+        // Search Transport
+        document.getElementById('searchTransportForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams(formData).toString();
+            try {
+                const res = await fetch(`api/tourist/search.php?${params}`);
+                const data = await res.json();
+                const container = document.getElementById('transportResults');
+                container.innerHTML = '';
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(t => {
+                        const div = document.createElement('div');
+                        div.className = 'card';
+                        div.style.border = '1px solid #ccc';
+                        div.style.marginTop = '10px';
+                        div.innerHTML = `
+                            <h4>${t.type}: ${t.source} &rarr; ${t.destination}</h4>
+                            <p>Date: ${t.departure_date} | Time: ${t.departure_time}</p>
+                            <p>Price: $${t.price} | <strong id="avail-transport-${t.id}">... seats available</strong></p>
+                            <button class="btn" onclick="initiateBooking('Transport', ${t.id})">Book Now</button>
+                        `;
+                        container.appendChild(div);
+                        fetchAvailability('transport', t.id);
+                    });
+                } else {
+                    container.innerHTML = '<p>No results found.</p>';
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        // Search Hotels
+        document.getElementById('searchHotelsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const params = new URLSearchParams(formData).toString();
+            try {
+                const res = await fetch(`api/tourist/search.php?type=hotel&${params}`);
+                const data = await res.json();
+                const container = document.getElementById('hotelResults');
+                container.innerHTML = '';
+                if (data.success && data.data.length > 0) {
+                    data.data.forEach(h => {
+                        const div = document.createElement('div');
+                        div.className = 'card';
+                        div.style.border = '1px solid #ccc';
+                        div.style.marginTop = '10px';
+                        div.innerHTML = `
+                            <h4>${h.name}</h4>
+                            <p>Location: ${h.location}</p>
+                            <p>Price per Night: $${h.price_per_night} | <strong id="avail-hotel-${h.id}">Select dates</strong></p>
+                            <p>${h.description}</p>
+                            <div style="margin-top:10px;">
+                                <input type="date" id="checkin_${h.id}" onchange="fetchAvailability('hotel', ${h.id})" required>
+                                <input type="date" id="checkout_${h.id}" onchange="fetchAvailability('hotel', ${h.id})" required>
+                                <button class="btn" onclick="initiateBooking('Hotel', ${h.id})">Book Now</button>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                        // Initial availability check removed, now triggered by date selection
+                    });
+                } else {
+                    container.innerHTML = '<p>No results found.</p>';
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        async function fetchAvailability(type, id) {
+            let apiUrl = `api/tourist/availability.php?type=${type}&id=${id}`;
+            
+            if (type === 'hotel') {
+                const checkin = document.getElementById(`checkin_${id}`).value;
+                const checkout = document.getElementById(`checkout_${id}`).value;
+                if (checkin && checkout && checkin <= checkout) { // Ensure checkin is not after checkout
+                    apiUrl += `&start_date=${checkin}&end_date=${checkout}`;
+                } else {
+                    // Don't fetch if dates are not selected or invalid for hotels
+                    const elem = document.getElementById(`avail-${type}-${id}`);
+                    if (elem) elem.textContent = `Select valid dates`;
+                    return;
+                }
+            }
+
+            try {
+                const res = await fetch(apiUrl);
+                const data = await res.json();
+                if (data.success) {
+                    const elem = document.getElementById(`avail-${type}-${id}`);
+                    if (elem) {
+                        const unit = type === 'hotel' ? 'rooms left' : 'seats available';
+                        elem.textContent = `${data.data.available} ${unit}`;
+                        if (data.data.available <= 0) {
+                            elem.textContent = `Fully Booked`;
+                            elem.style.color = 'red';
+                        } else if (data.data.available < 10) {
+                            elem.style.color = 'orange';
+                        } else {
+                            elem.style.color = 'green';
+                        }
+                    }
+                } else {
+                    const elem = document.getElementById(`avail-${type}-${id}`);
+                    if (elem) elem.textContent = `N/A`;
+                    elem.style.color = 'gray';
+                }
+            } catch (err) { console.error(err); }
+        }
+        
+        async function initiateBooking(type, id) {
+            let payload = { type, entity_id: id, guests_count: 1 };
+            
+            if (type === 'Hotel') {
+                const start = document.getElementById(`checkin_${id}`).value;
+                const end = document.getElementById(`checkout_${id}`).value;
+                if (!start || !end) {
+                    alert("Please select dates.");
+                    return;
+                }
+                payload.start_date = start;
+                payload.end_date = end;
+            }
+
+            try {
+                const res = await fetch('api/tourist/booking.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    window.location.href = `payment-checkout.html?booking_id=${data.data.booking_id}`;
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // Removed showCheckout, processPayment as they are now on a separate page
+        
+        function showSuccess(paymentData) {
+            const successDiv = document.createElement('div');
+            successDiv.id = 'successModal';
+            successDiv.style = "position:fixed; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; z-index:1000;";
+            successDiv.innerHTML = `
+                <div class="card" style="width:400px; text-align:center;">
+                    <h2 style="color:green;">Booking Confirmed!</h2>
+                    <p>Thank you for your payment of $${paymentData.amount}</p>
+                    <p>Transaction ID: ${paymentData.transaction_id}</p>
+                    <p>Booking ID: #${paymentData.booking_id}</p>
+                    <hr>
+                    <button class="btn" onclick="viewTicket(${paymentData.booking_id})">View Ticket</button>
+                    <button class="btn" style="background:#ccc; color:#000;" onclick="document.getElementById('successModal').remove()">Close</button>
+                </div>
+            `;
+            document.body.appendChild(successDiv);
+        }
+
+        async function viewTicket(bookingId) {
+            try {
+                const res = await fetch(`api/tourist/ticket.php?booking_id=${bookingId}`);
+                const data = await res.json();
+                if (data.success) {
+                    const t = data.data;
+                    const ticketWindow = window.open('', '_blank');
+                    ticketWindow.document.write(`
+                        <html><head><title>Ticket #${bookingId}</title></head><body>
+                        <h1>QuestLog - Booking Confirmation</h1>
+                        <hr>
+                        <p><strong>Booking ID:</strong> #${t.booking.id}</p>
+                        <p><strong>Type:</strong> ${t.booking.type}</p>
+                        <p><strong>Status:</strong> ${t.booking.payment_status}</p>
+                        <h3>Entity Details</h3>
+                        <p>${JSON.stringify(t.entity)}</p>
+                        <h3>Payment Info</h3>
+                        <p>Transaction: ${t.payment.transaction_id}</p>
+                        <p>Amount: $${t.booking.total_amount}</p>
+                        <hr>
+                        <button onclick="window.print()">Print Ticket</button>
+                        </body></html>
+                    `);
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        // Tab switching logic for My Trips
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const tab = button.getAttribute('data-tab');
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                document.querySelectorAll('.tab-pane').forEach(pane => {
+                    pane.style.display = pane.id === `tab-content-${tab}` ? 'block' : 'none';
+                });
+            });
+        });
+
         // Fetch Bookings on Load
         async function fetchBookings() {
             try {
                 const res = await fetch('api/tourist/booking.php');
                 const data = await res.json();
+
                 if (data.success) {
-                    const tbody = document.querySelector('#bookingsTable tbody');
-                    tbody.innerHTML = '';
-                    data.data.forEach(b => {
-                        const tr = document.createElement('tr');
-                        tr.innerHTML = `
-                <td>#${b.booking_id}</td>
-                <td>${b.type}</td>
-                <td>${b.entity_name}</td>
-                <td>${b.start_date || b.booking_date}</td>
-                <td>$${b.total_amount}</td>
-                <td>${b.booking_status}</td>
-              `;
-                        tbody.appendChild(tr);
+                    const allBody = document.querySelector('#bookingsTableAll tbody');
+                    const hotelsBody = document.querySelector('#bookingsTableHotels tbody');
+                    const transportsBody = document.querySelector('#bookingsTableTransports tbody');
+                    
+                    allBody.innerHTML = '';
+                    hotelsBody.innerHTML = '';
+                    transportsBody.innerHTML = '';
+
+                    // Populate "All" tab
+                    data.data.all.forEach(b => {
+                        allBody.innerHTML += `
+                            <tr>
+                                <td>#${b.booking_id}</td>
+                                <td>${b.type}</td>
+                                <td>${b.entity_name}</td>
+                                <td>${b.start_date || b.booking_date}</td>
+                                <td>$${b.total_amount}</td>
+                                <td>${b.booking_status}</td>
+                                <td><button class="btn" onclick="viewTicket(${b.booking_id})">View Details</button>
+                                    <button class="btn" style="background:#e74c3c;" onclick="cancelBooking(${b.booking_id})">Cancel</button></td>
+                            </tr>
+                        `;
                     });
+
+                    // Populate "Hotels" tab
+                    data.data.hotels.forEach(h => {
+                        hotelsBody.innerHTML += `
+                            <tr>
+                                <td>#${h.booking_id}</td>
+                                <td>${h.entity_name}</td>
+                                <td>${h.entity_details}</td>
+                                <td>${h.start_date}</td>
+                                <td>${h.end_date}</td>
+                                <td>${h.booking_status}</td>
+                                <td><button class="btn" onclick="viewTicket(${h.booking_id})">View Details</button>
+                                    <button class="btn" style="background:#e74c3c;" onclick="cancelBooking(${h.booking_id})">Cancel</button></td>
+                            </tr>
+                        `;
+                    });
+
+                    // Populate "Transports" tab
+                     data.data.transports.forEach(t => {
+                        transportsBody.innerHTML += `
+                            <tr>
+                                <td>#${t.booking_id}</td>
+                                <td>${t.transport_mode}</td>
+                                <td>${t.entity_name}</td>
+                                <td>${t.start_date} ${t.entity_details}</td>
+                                <td>${t.booking_status}</td>
+                                <td><button class="btn" onclick="viewTicket(${t.booking_id})">View Details</button>
+                                    <button class="btn" style="background:#e74c3c;" onclick="cancelBooking(${t.booking_id})">Cancel</button></td>
+                            </tr>
+                        `;
+                    });
+
                 }
             } catch (e) {
                 console.error("Failed to load bookings", e);
             }
         }
 
+        async function cancelBooking(bookingId) {
+            if (!confirm("Are you sure you want to cancel this booking? This action cannot be undone.")) {
+                return;
+            }
+            try {
+                const res = await fetch('api/tourist/cancel_booking.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ booking_id: bookingId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Booking cancelled successfully!");
+                    fetchBookings(); // Refresh the list
+                } else {
+                    alert("Error cancelling booking: " + (data.message || "Unknown error."));
+                }
+            } catch (err) {
+                console.error("Error cancelling booking:", err);
+                alert("A network error occurred while cancelling the booking.");
+            }
+        }
+        
         // Profile load
         async function loadProfile() {
             try {

@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestLog - Secure Checkout</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .checkout-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .bill-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .summary-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        .summary-card h3 { border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
+        .price-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .total-row { border-top: 2px solid #333; padding-top: 10px; font-weight: bold; font-size: 1.2rem; }
+        .payment-methods { margin-top: 20px; }
+        .method-option { border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin-bottom: 10px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+        .method-option:hover { border-color: #daa520; background: #fffcf0; }
+        .method-option input { width: auto; }
+    </style>
+</head>
+<body style="background: #f4f7f6; color: #333;">
+    <div class="checkout-container">
+        <h1>Secure Checkout</h1>
+        <div class="bill-details">
+            <div class="summary-card" id="bookingInfo">
+                <h3>Booking Details</h3>
+                <p>Loading details...</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Payment Summary</h3>
+                <div id="priceBreakdown">
+                    <div class="price-row"><span>Subtotal</span> <span id="subtotal">$0.00</span></div>
+                    <div class="price-row"><span>CGST (6%)</span> <span id="cgst">$0.00</span></div>
+                    <div class="price-row"><span>SGST (6%)</span> <span id="sgst">$0.00</span></div>
+                    <div class="price-row"><span>Service Fee</span> <span id="serviceFee">$0.00</span></div>
+                    <div class="total-row price-row"><span>Total Amount</span> <span id="totalAmount">$0.00</span></div>
+                </div>
+
+                <div class="payment-methods">
+                    <h4>Select Payment Mode</h4>
+                    <label class="method-option">
+                        <input type="radio" name="payMethod" value="Credit Card" checked>
+                        <span>Credit / Debit Card</span>
+                    </label>
+                    <label class="method-option">
+                        <input type="radio" name="payMethod" value="UPI">
+                        <span>UPI / QR Code</span>
+                    </label>
+                    <label class="method-option">
+                        <input type="radio" name="payMethod" value="Net Banking">
+                        <span>Net Banking</span>
+                    </label>
+                </div>
+
+                <button class="btn" style="width:100%; margin-top:20px; padding:15px;" id="payBtn">Proceed to Pay</button>
+                <button class="btn" style="width:100%; background:#ccc; color:#000; margin-top:10px; padding:15px;" onclick="window.location.href='tourist-dashboard.html';">Cancel Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('booking_id');
+
+        if (!bookingId) {
+            alert("Invalid access. No booking found.");
+            window.location.href = 'tourist-dashboard.html';
+        }
+
+        async function loadDetails() {
+            try {
+                const res = await fetch(`api/tourist/ticket.php?booking_id=${bookingId}`);
+                const data = await res.json();
+                if (data.success) {
+                    const b = data.data.booking;
+                    const e = data.data.entity;
+                    const p = data.data.price_breakdown;
+                    
+                    document.getElementById('bookingInfo').innerHTML = `
+                        <h3>Booking Details</h3>
+                        <p><strong>Booking ID:</strong> #${b.id}</p>
+                        <p><strong>Type:</strong> ${b.type}</p>
+                        <p><strong>Name:</strong> ${e.name || e.type}</p>
+                        <p><strong>Details:</strong> ${e.location || (e.source + ' to ' + e.destination)}</p>
+                        <p><strong>Date:</strong> ${b.start_date || b.booking_date}</p>
+                        <p><strong>Guests:</strong> ${b.guests_count}</p>
+                    `;
+
+                    document.getElementById('subtotal').textContent = `$${p.subtotal}`;
+                    document.getElementById('cgst').textContent = `$${p.cgst}`;
+                    document.getElementById('sgst').textContent = `$${p.sgst}`;
+                    document.getElementById('serviceFee').textContent = `$${p.service_fee}`;
+                    document.getElementById('totalAmount').textContent = `$${p.total_amount}`;
+
+                    // Disable payment button if already paid
+                    if (b.payment_status === 'Completed') {
+                        document.getElementById('payBtn').textContent = 'Already Paid';
+                        document.getElementById('payBtn').disabled = true;
+                    }
+
+                } else {
+                    alert(data.message);
+                     window.location.href = 'tourist-dashboard.html';
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('payBtn').addEventListener('click', async () => {
+            const mode = document.querySelector('input[name="payMethod"]:checked').value;
+            const totalAmount = parseFloat(document.getElementById('totalAmount').textContent.replace('$', ''));
+
+            try {
+                const res = await fetch('api/tourist/payment.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        booking_id: bookingId, 
+                        payment_method: mode,
+                        amount: totalAmount 
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert("Payment Successful! Your ticket is now confirmed.");
+                    window.location.href = `tourist-dashboard.html#trips`;
+                } else {
+                    alert(data.message);
+                }
+            } catch (err) { console.error(err); }
+        });
+
+        loadDetails();
+    </script>
+</body>
+</html>

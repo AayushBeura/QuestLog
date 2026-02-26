@@ -132,6 +132,31 @@ if ($resAdmin['code'] === 200) {
         ];
         $resBooking = makeRequest("$baseUrl/tourist/booking.php", 'POST', $bookingData, $touristCookies);
         echo "   Status: " . $resBooking['code'] . " - " . ($resBooking['body']['message'] ?? 'No message') . "\n";
+        
+        if ($resBooking['code'] === 201) {
+            $bookingId = $resBooking['body']['data']['booking_id'];
+            echo "   Calculated Total: $" . $resBooking['body']['data']['total_amount'] . " (Tax: $" . $resBooking['body']['data']['tax'] . ")\n";
+
+            // 9. Test Payment
+            echo "\n9. Testing Tourist Payment...\n";
+            $paymentData = [
+                'booking_id' => $bookingId,
+                'payment_method' => 'UPI'
+            ];
+            $resPayment = makeRequest("$baseUrl/tourist/payment.php", 'POST', $paymentData, $touristCookies);
+            echo "   Status: " . $resPayment['code'] . " - " . ($resPayment['body']['message'] ?? 'No message') . "\n";
+            if ($resPayment['code'] === 200) {
+                echo "   Transaction ID: " . $resPayment['body']['data']['transaction_id'] . "\n";
+                
+                // 10. Test Ticket Fetch
+                echo "\n10. Testing Ticket Retrieval...\n";
+                $resTicket = makeRequest("$baseUrl/tourist/ticket.php?booking_id=$bookingId", 'GET', null, $touristCookies);
+                echo "   Status: " . $resTicket['code'] . " - " . ($resTicket['body']['message'] ?? 'No message') . "\n";
+                if ($resTicket['code'] === 200) {
+                    echo "    Confirmed Status: " . $resTicket['body']['data']['booking']['payment_status'] . "\n";
+                }
+            }
+        }
     } else {
         echo "   Skipped: Hotel creation failed.\n";
     }
