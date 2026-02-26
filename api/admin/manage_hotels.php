@@ -72,12 +72,20 @@ if ($method === 'GET') {
     $updateFields = [];
     $params = [];
 
-    $allowedFields = ['name', 'location', 'description', 'price_per_night', 'rooms_available', 'status'];
+    $allowedTextFields = ['name', 'location', 'description', 'status'];
+    $allowedNumericFields = ['price_per_night', 'rooms_available'];
 
-    foreach ($allowedFields as $field) {
+    foreach ($allowedTextFields as $field) {
         if (isset($data[$field])) {
             $updateFields[] = "$field = ?";
-            $params[] = sanitizeInput($data[$field]); // Ensure numbers are caught too, properly bound.
+            $params[] = sanitizeInput($data[$field]);
+        }
+    }
+
+    foreach ($allowedNumericFields as $field) {
+        if (isset($data[$field])) {
+            $updateFields[] = "$field = ?";
+            $params[] = is_numeric($data[$field]) ? $data[$field] + 0 : 0;
         }
     }
 

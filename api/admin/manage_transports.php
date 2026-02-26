@@ -34,7 +34,7 @@ if ($method === 'GET') {
     $price = isset($_POST['price']) ? (float)$_POST['price'] : (isset($data['price']) ? (float)$data['price'] : 0);
     $total_seats = isset($_POST['total_seats']) ? (int)$_POST['total_seats'] : (isset($data['total_seats']) ? (int)$data['total_seats'] : 0);
 
-    if (!in_array($type, ['Flight', 'Train', 'Bus']) || empty($source) || empty($destination) || $price <= 0 || $total_seats <= 0) {
+    if (!in_array($type, ['Flight', 'Train']) || empty($source) || empty($destination) || $price <= 0 || $total_seats <= 0) {
         sendJsonResponse(false, 'Please provide valid transport details.', [], 400);
     }
 
@@ -64,12 +64,20 @@ if ($method === 'GET') {
     $updateFields = [];
     $params = [];
 
-    $allowedFields = ['type', 'source', 'destination', 'departure_date', 'departure_time', 'price', 'total_seats', 'available_seats', 'status'];
+    $allowedTextFields = ['type', 'source', 'destination', 'departure_date', 'departure_time', 'status'];
+    $allowedNumericFields = ['price', 'total_seats', 'available_seats'];
 
-    foreach ($allowedFields as $field) {
+    foreach ($allowedTextFields as $field) {
         if (isset($data[$field])) {
             $updateFields[] = "$field = ?";
             $params[] = sanitizeInput($data[$field]);
+        }
+    }
+
+    foreach ($allowedNumericFields as $field) {
+        if (isset($data[$field])) {
+            $updateFields[] = "$field = ?";
+            $params[] = is_numeric($data[$field]) ? $data[$field] + 0 : 0;
         }
     }
 

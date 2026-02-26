@@ -41,13 +41,8 @@ try {
         throw new Exception("This booking has already been paid for.");
     }
 
-    // 2. Verify amount matches (passed from frontend, or re-fetched)
-    $amount_from_frontend = isset($data['amount']) ? (float)$data['amount'] : 0;
+    // Use the amount from the database as the single source of truth
     $amount_from_db = (float)$booking['total_amount'];
-
-    if ($amount_from_frontend !== $amount_from_db) {
-        throw new Exception("Price mismatch detected. Please try booking again.");
-    }
     
     // 3. Simulate Payment Processing (e.g., contacting Stripe/PayPal API)
     // This is where you'd integrate with a real payment gateway.

@@ -74,6 +74,25 @@ if ($method === 'GET') {
         sendJsonResponse(false, 'Invalid booking parameters.', [], 400);
     }
 
+    // BUG FIX: Validate guests_count is at least 1
+    if ($guests_count < 1) {
+        sendJsonResponse(false, 'Guest count must be at least 1.', [], 400);
+    }
+
+    // BUG FIX: Validate dates for hotel bookings
+    if ($type === 'Hotel') {
+        if (empty($start_date) || empty($end_date)) {
+            sendJsonResponse(false, 'Start and end dates are required for hotel bookings.', [], 400);
+        }
+        $today = date('Y-m-d');
+        if ($start_date < $today) {
+            sendJsonResponse(false, 'Check-in date cannot be in the past.', [], 400);
+        }
+        if ($end_date <= $start_date) {
+            sendJsonResponse(false, 'Check-out date must be after check-in date.', [], 400);
+        }
+    }
+
     try {
         $pdo->beginTransaction();
 

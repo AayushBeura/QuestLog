@@ -38,12 +38,16 @@ try {
     $stmt->execute([$email]);
     $user = $stmt->fetch();
 
-    if ($user && password_verify($password, $user['password_hash'])) {
-        
-        // Check if user is blocked
-        if ($user['status'] === 'Blocked') {
-            sendJsonResponse(false, 'Your account has been blocked. Please contact support.', [], 403);
-        }
+    if (!$user) {
+        sendJsonResponse(false, 'Invalid email or password.', [], 401);
+    }
+
+    // Check if user is blocked before verifying password
+    if ($user['status'] === 'Blocked') {
+        sendJsonResponse(false, 'Your account has been blocked. Please contact support.', [], 403);
+    }
+
+    if (password_verify($password, $user['password_hash'])) {
 
         // Authentication successful, regenerate session id for security
         session_regenerate_id(true);

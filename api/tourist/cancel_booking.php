@@ -28,7 +28,7 @@ try {
     $pdo->beginTransaction();
 
     // 1. Fetch booking details and check ownership
-    $stmt = $pdo->prepare("SELECT type, entity_id, guests_count, booking_status FROM bookings WHERE id = ? AND user_id = ? FOR UPDATE");
+    $stmt = $pdo->prepare("SELECT type, entity_id, guests_count, booking_status, start_date FROM bookings WHERE id = ? AND user_id = ? FOR UPDATE");
     $stmt->execute([$booking_id, $user_id]);
     $booking = $stmt->fetch();
 
@@ -39,6 +39,21 @@ try {
     // 2. Check if booking is eligible for cancellation
     if (in_array($booking['booking_status'], ['Cancelled', 'Completed'])) {
         throw new Exception("Booking cannot be cancelled as it is already " . $booking['booking_status'] . ".");
+    }
+
+    // BUG FIX: Prevent cancellation of bookings whose service date has already passed
+    $today = date('Y-m-d');
+    if ($booking['type'] === 'Hotel') {
+        if (!empty($booking['start_date']) && $booking['start_date'] < $today) {
+            throw new Exception("Cannot cancel a hotel booking whose check-in date has already passed.");
+        }
+    } else { // Transport
+        $stmtTransport = $pdo->prepare("SELECT departure_date FROM transports WHERE id = ?");
+        $stmtTransport->execute([$booking['entity_id']]);
+        $transport = $stmtTransport->fetch();
+        if ($transport && $transport['departure_date'] < $today) {
+            throw new Exception("Cannot cancel a transport booking whose departure date has already passed.");
+        }
     }
 
     // 3. Restore inventory

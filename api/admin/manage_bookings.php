@@ -70,7 +70,11 @@ if ($method === 'GET') {
             }
         }
 
-        $stmt = $pdo->prepare("UPDATE bookings SET booking_status = ? WHERE id = ?");
+        if ($status === 'Cancelled') {
+            $stmt = $pdo->prepare("UPDATE bookings SET booking_status = ?, payment_status = 'Refunded' WHERE id = ?");
+        } else {
+            $stmt = $pdo->prepare("UPDATE bookings SET booking_status = ? WHERE id = ?");
+        }
         $stmt->execute([$status, $booking_id]);
         
         $pdo->commit();

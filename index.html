@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body> 
+<body>
   <!-- Navigation Bar -->
   <nav class="navbar">
     <div class="nav-container">
@@ -95,11 +95,11 @@
         <div class="form-group">
           <label id="stateLabel" for="signupState">State / Region</label>
           <!-- State Dropdown (hidden by default) -->
-          <select id="signupStateDropdown" name="state" class="state-field" style="display: none">
+          <select id="signupStateDropdown" class="state-field" style="display: none">
             <option value="">Select State</option>
           </select>
           <!-- State Text Input (hidden by default) -->
-          <input type="text" id="signupStateInput" name="state" class="state-field" style="display: none"
+          <input type="text" id="signupStateInput" class="state-field" style="display: none"
             placeholder="State / Province / Region" />
         </div>
         <div class="form-group">
@@ -175,8 +175,8 @@
           </div>
 
           <p class="b2-description">
-            QuestLog is your complete travel companion. Book trains, flights,
-            and buses, reserve accommodations at premium hotels, create
+            QuestLog is your complete travel companion. Book trains and flights,
+            reserve accommodations at premium hotels, create
             personalized itineraries tailored to your preferences, and manage
             all your activities and daily plans in one unified dashboard. From
             start to finish, every aspect of your journey is organized,
@@ -186,7 +186,7 @@
           <div class="b2-features">
             <div class="feature-card">
               <div class="feature-icon">✈️</div>
-              <h3>Book Trains, Flights & Buses</h3>
+              <h3>Book Trains & Flights</h3>
               <p>
                 Seamless ticket booking across multiple transport options.
               </p>
@@ -353,15 +353,16 @@
         });
       }
       if (loginModal) {
-        loginModal.addEventListener("click", (e) => {
-          if (e.target === loginModal) {
+        const modalBlur = loginModal.querySelector('.modal-blur');
+        if (modalBlur) {
+          modalBlur.addEventListener("click", (e) => {
             loginModal.classList.add("hidden");
             document.documentElement.style.overflow = "auto";
             document.body.style.overflow = "auto";
             document.removeEventListener("wheel", preventScroll);
             document.removeEventListener("touchmove", preventScroll);
-          }
-        });
+          });
+        }
       }
 
       // Form toggle handlers
@@ -666,10 +667,37 @@
         authMessage.style.border = `1px solid ${isSuccess ? "#c3e6cb" : "#f5c6cb"}`;
       }
 
+      // Map country codes to full names
+      const countryNames = {
+        'IN': 'India', 'US': 'United States', 'CA': 'Canada',
+        'AU': 'Australia', 'GB': 'United Kingdom', 'NZ': 'New Zealand'
+      };
+
       async function handleFormSubmit(e, formElement, url) {
         e.preventDefault();
         const formData = new FormData(formElement);
         const data = Object.fromEntries(formData.entries());
+
+        // Fix: For signup, resolve state from the correct active field
+        if (formElement.id === 'signupForm') {
+          const stateDropdown = document.getElementById('signupStateDropdown');
+          const stateInput = document.getElementById('signupStateInput');
+          if (stateDropdown && stateDropdown.style.display !== 'none') {
+            data.state = stateDropdown.value;
+          } else if (stateInput && stateInput.style.display !== 'none') {
+            data.state = stateInput.value;
+          } else {
+            data.state = '';
+          }
+
+          // Fix: Resolve country code to full name
+          const countryCode = data.country;
+          if (countryCode === 'OTHER') {
+            data.countryName = document.getElementById('signupCountryName').value;
+          } else if (countryNames[countryCode]) {
+            data.countryName = countryNames[countryCode];
+          }
+        }
 
         try {
           const response = await fetch(url, {

@@ -18,26 +18,14 @@ if ($id <= 0 || !in_array($type, ['hotel', 'transport'])) {
 try {
     $availability = null;
     if ($type === 'hotel') {
-        // Get total rooms
-        $stmtTotal = $pdo->prepare("SELECT rooms_available FROM hotels WHERE id = ?");
+        // Use rooms_available directly, matching booking.php logic
+        $stmtTotal = $pdo->prepare("SELECT rooms_available FROM hotels WHERE id = ? AND status = 'Active'");
         $stmtTotal->execute([$id]);
-        $total_rooms = $stmtTotal->fetchColumn();
+        $availability = $stmtTotal->fetchColumn();
 
-        if ($total_rooms === false) {
+        if ($availability === false) {
             sendJsonResponse(false, 'Hotel not found.', [], 404);
         }
-        
-        // Count existing bookings that conflict with the requested dates
-        // Only consider bookings that are not cancelled or pending payment.
-        $stmtConflict = $pdo->prepare("SELECT COUNT(*) FROM bookings 
-            WHERE entity_id = ? AND type = 'Hotel' 
-            AND booking_status NOT IN ('Cancelled', 'Pending Payment')
-            AND ((start_date <= ? AND end_date >= ?) OR (start_date <= ? AND end_date >= ?))");
-        
-        $stmtConflict->execute([$id, $end_date, $start_date, $end_date, $start_date]);
-        $conflicting_bookings = $stmtConflict->fetchColumn();
-
-        $availability = $total_rooms - $conflicting_bookings;
 
     } else { // transport
         $stmt = $pdo->prepare("SELECT available_seats FROM transports WHERE id = ?");

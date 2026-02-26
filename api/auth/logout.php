@@ -3,6 +3,8 @@
 
 require_once '../../includes/utils.php';
 
+handleCors();
+
 session_start();
 
 // Unset all of the session variables.
@@ -19,8 +21,6 @@ if (ini_get("session.use_cookies")) {
 
 // Finally, destroy the session.
 session_destroy();
-
-handleCors();
 
 sendJsonResponse(true, 'Logged out successfully.', [], 200);
 ?>

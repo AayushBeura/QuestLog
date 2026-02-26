@@ -41,7 +41,7 @@ function enableLocationAutocomplete(inputId) {
     wrapper.style.position = 'relative';
     wrapper.style.display = 'block'; // Make wrapper take full width
     wrapper.style.flex = '1';
-    
+
     // Move inline styles from input to wrapper if necessary, or just rely on class
     inputElement.parentNode.insertBefore(wrapper, inputElement);
     wrapper.appendChild(inputElement);
@@ -64,14 +64,14 @@ function enableLocationAutocomplete(inputId) {
     suggestList.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.5)';
     suggestList.style.zIndex = '1000';
     suggestList.style.display = 'none';
-    
+
     wrapper.appendChild(suggestList);
 
     function closeList() {
         suggestList.style.display = 'none';
     }
 
-    inputElement.addEventListener('input', function() {
+    inputElement.addEventListener('input', function () {
         const val = this.value;
         suggestList.innerHTML = '';
         if (!val) {
@@ -80,7 +80,7 @@ function enableLocationAutocomplete(inputId) {
         }
 
         let hasMatch = false;
-        
+
         worldLocations.forEach(loc => {
             if (loc.toLowerCase().includes(val.toLowerCase())) {
                 hasMatch = true;
@@ -90,31 +90,31 @@ function enableLocationAutocomplete(inputId) {
                 li.style.color = '#fff';
                 li.style.fontSize = '0.9rem';
                 li.style.borderBottom = '1px solid rgba(218, 165, 32, 0.1)';
-                
+
                 // Emphasize match
                 const matchIndex = loc.toLowerCase().indexOf(val.toLowerCase());
                 const pre = loc.substring(0, matchIndex);
                 const match = loc.substring(matchIndex, matchIndex + val.length);
                 const post = loc.substring(matchIndex + val.length);
-                
+
                 li.innerHTML = `${pre}<strong style="color: #daa520;">${match}</strong>${post}`;
-                
+
                 li.addEventListener('mouseover', () => {
                     li.style.background = 'rgba(218, 165, 32, 0.15)';
                 });
                 li.addEventListener('mouseout', () => {
                     li.style.background = 'transparent';
                 });
-                
+
                 li.addEventListener('click', () => {
                     inputElement.value = loc;
                     closeList();
                 });
-                
+
                 suggestList.appendChild(li);
             }
         });
-        
+
         if (hasMatch) {
             suggestList.style.display = 'block';
         } else {
@@ -123,13 +123,13 @@ function enableLocationAutocomplete(inputId) {
     });
 
     // Enforce selection from list on blur
-    inputElement.addEventListener('change', function() {
+    inputElement.addEventListener('blur', function () {
         setTimeout(() => {
-            if (!worldLocations.includes(this.value)) {
+            if (this.value && !worldLocations.includes(this.value)) {
                 this.value = ''; // Reset if invalid
                 this.placeholder = 'Please select from suggestions';
             }
-        }, 150); // slight delay to allow click event on li to fire first
+        }, 250); // longer delay to ensure click event on li fires first
     });
 
     document.addEventListener('click', (e) => {

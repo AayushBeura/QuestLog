@@ -7,7 +7,9 @@
     <title>QuestLog - Admin Dashboard</title>
     <!-- Keep existing styles if any globals appply, but we will rely mostly on our inline or combined styles to ensure it looks right -->
     <link rel="stylesheet" href="styles.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -23,8 +25,10 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: rgba(8, 8, 12, 0.65); /* Adjusted transparency to reveal more background */
-            backdrop-filter: blur(12px); /* Blur effect for the background */
+            background: rgba(8, 8, 12, 0.65);
+            /* Adjusted transparency to reveal more background */
+            backdrop-filter: blur(12px);
+            /* Blur effect for the background */
             -webkit-backdrop-filter: blur(12px);
             z-index: -1;
         }
@@ -64,7 +68,8 @@
 
         /* Admin specific sidebar logo variation */
         .sidebar-logo span {
-            color: #d35400; /* Subtle orange tint for Admin */
+            color: #d35400;
+            /* Subtle orange tint for Admin */
             -webkit-text-fill-color: #d35400;
         }
 
@@ -103,6 +108,7 @@
             padding-bottom: 30px;
             color: #ff6b6b;
         }
+
         #logoutBtn:hover {
             background: rgba(255, 107, 107, 0.1);
             color: #ff8787;
@@ -142,7 +148,8 @@
         }
 
         .welcome-text span {
-            color: #e67e22; /* Admin specific color */
+            color: #e67e22;
+            /* Admin specific color */
             font-weight: 600;
             font-size: 1.2rem;
             letter-spacing: 0.5px;
@@ -160,7 +167,7 @@
             margin-bottom: 35px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(218, 165, 32, 0.2);
         }
@@ -202,10 +209,11 @@
             letter-spacing: 1px;
             background: rgba(0, 0, 0, 0.2);
         }
-        
+
         table th:first-child {
             border-top-left-radius: 8px;
         }
+
         table th:last-child {
             border-top-right-radius: 8px;
         }
@@ -247,7 +255,7 @@
             border-color: rgba(218, 165, 32, 0.8);
             box-shadow: 0 0 16px rgba(218, 165, 32, 0.15);
         }
-        
+
         select option {
             background: #1a1a1f;
             color: #fff;
@@ -290,6 +298,7 @@
             color: #fff;
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
         }
+
         .btn-danger:hover {
             background: linear-gradient(135deg, #ff7979 0%, #eb4d4b 100%);
             box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
@@ -300,6 +309,7 @@
             color: #fff;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
         }
+
         .btn-success:hover {
             background: linear-gradient(135deg, #58d68d 0%, #2ecc71 100%);
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.35);
@@ -318,21 +328,31 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.2);
         }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(218, 165, 32, 0.4);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(218, 165, 32, 0.7);
         }
@@ -381,12 +401,14 @@
             <!-- Hotels Section -->
             <section id="hotels-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <h3 style="margin: 0; border: none; padding: 0;">Registered Hotels</h3>
                         <button id="showAddHotel" class="btn">+ Add Hotel</button>
                     </div>
 
-                    <div id="addHotelFormContainer" style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
+                    <div id="addHotelFormContainer"
+                        style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
                         <h4>Add New Hotel</h4>
                         <form id="addHotelForm" style="display: flex; flex-direction:column; gap: 15px;">
                             <div class="form-row" style="margin-bottom: 0;">
@@ -397,10 +419,13 @@
                                 <input type="text" id="hDescription" placeholder="Description" required />
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Price per night</label><input type="number" step="0.01" id="hPrice" required /></div>
-                                <div style="flex:1;"><label>Rooms Available</label><input type="number" id="hRooms" required /></div>
+                                <div style="flex:1;"><label>Price per night</label><input type="number" step="0.01"
+                                        id="hPrice" required /></div>
+                                <div style="flex:1;"><label>Rooms Available</label><input type="number" id="hRooms"
+                                        required /></div>
                             </div>
-                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save Hotel</button>
+                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save
+                                Hotel</button>
                         </form>
                     </div>
                     <table id="hotelsTable">
@@ -424,12 +449,14 @@
             <!-- Transport Section -->
             <section id="transports-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <h3 style="margin: 0; border: none; padding: 0;">Transport Inventory</h3>
                         <button id="showAddTransport" class="btn">+ Add Transport</button>
                     </div>
 
-                    <div id="addTransportFormContainer" style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
+                    <div id="addTransportFormContainer"
+                        style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
                         <h4>Add New Transport</h4>
                         <form id="addTransportForm" style="display: flex; flex-direction:column; gap: 15px;">
                             <div class="form-row" style="margin-bottom: 0;">
@@ -438,21 +465,27 @@
                                     <select id="tType" required style="width: 100%;">
                                         <option value="Flight">✈️ Flight</option>
                                         <option value="Train">🚆 Train</option>
-                                        <option value="Bus">🚌 Bus</option>
                                     </select>
                                 </div>
-                                <div style="flex:1;"><label>Source</label><input type="text" id="tSource" placeholder="New York" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Destination</label><input type="text" id="tDestination" placeholder="London" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Source</label><input type="text" id="tSource"
+                                        placeholder="New York" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Destination</label><input type="text" id="tDestination"
+                                        placeholder="London" required style="width: 100%;" /></div>
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Departure Date</label><input type="date" id="tDate" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Departure Time</label><input type="time" id="tTime" required style="width: 100%;" step="60" /></div>
+                                <div style="flex:1;"><label>Departure Date</label><input type="date" id="tDate" required
+                                        style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Departure Time</label><input type="time" id="tTime" required
+                                        style="width: 100%;" step="60" /></div>
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Price</label><input type="number" step="0.01" id="tPrice" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Total Seats</label><input type="number" id="tSeats" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Price</label><input type="number" step="0.01" id="tPrice"
+                                        required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Total Seats</label><input type="number" id="tSeats" required
+                                        style="width: 100%;" /></div>
                             </div>
-                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save Transport</button>
+                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save
+                                Transport</button>
                         </form>
                     </div>
                     <table id="transportsTable">
@@ -506,7 +539,7 @@
             enableLocationAutocomplete('hLocation');
             enableLocationAutocomplete('tSource');
             enableLocationAutocomplete('tDestination');
-            
+
             const tDateInput = document.getElementById('tDate');
             if (tDateInput) {
                 const today = new Date();
@@ -760,11 +793,30 @@
             window.location.href = 'index.html';
         });
 
-        // Init
-        fetchUsers();
-        fetchHotels();
-        fetchTransports();
-        fetchBookings();
+        // Auth guard: verify admin access before loading anything
+        async function checkAdminAuth() {
+            try {
+                const res = await fetch('api/admin/users.php');
+                if (res.status === 401 || res.status === 403) {
+                    window.location.href = 'index.html';
+                    return false;
+                }
+                return true;
+            } catch (e) {
+                window.location.href = 'index.html';
+                return false;
+            }
+        }
+
+        // Init — only load data if admin auth succeeds
+        checkAdminAuth().then(isAdmin => {
+            if (isAdmin) {
+                fetchUsers();
+                fetchHotels();
+                fetchTransports();
+                fetchBookings();
+            }
+        });
     </script>
 </body>
 

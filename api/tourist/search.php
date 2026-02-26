@@ -48,7 +48,7 @@ if ($type === 'hotel') {
         sendJsonResponse(false, 'An error occurred fetching hotels.', [], 500);
     }
 
-} elseif (in_array($type, ['flight', 'train', 'bus'])) {
+} elseif (in_array($type, ['flight', 'train'])) {
     // Search Transports
     $source = isset($_GET['source']) ? sanitizeInput($_GET['source']) : '';
     $destination = isset($_GET['destination']) ? sanitizeInput($_GET['destination']) : '';
@@ -83,6 +83,6 @@ if ($type === 'hotel') {
     }
 
 } else {
-    sendJsonResponse(false, 'Invalid search type. Use hotel, flight, train, or bus.', [], 400);
+    sendJsonResponse(false, 'Invalid search type. Use hotel, flight, or train.', [], 400);
 }
 ?>
