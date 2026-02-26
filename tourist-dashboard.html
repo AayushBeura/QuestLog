@@ -375,6 +375,7 @@
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Status</th>
+                                <th>Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -518,7 +519,17 @@
                 if (data.success) {
                     const tbody = document.querySelector('#bookingsTable tbody');
                     tbody.innerHTML = '';
-                    data.data.forEach(b => {
+                    const bookings = data.data.all || data.data;
+                    bookings.forEach(b => {
+                        let actionBtn = '';
+                        if (b.booking_status === 'Confirmed' || b.booking_status === 'Completed') {
+                            actionBtn = `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewTicket(${b.booking_id})">View Ticket</button>`;
+                        } else if (b.booking_status === 'Pending Payment') {
+                            actionBtn = `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #4cd137 0%, #44bd32 100%);" onclick="window.location.href='payment-checkout.html?booking_id=${b.booking_id}'">Continue with Payment</button>`;
+                        } else if (b.booking_status === 'Cancelled') {
+                            actionBtn = `<span style="color: #ff6b6b; font-size: 0.85rem; font-weight: 600;">Cancelled</span>`;
+                        }
+
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                 <td>#${b.booking_id}</td>
@@ -527,6 +538,7 @@
                 <td>${b.start_date || b.booking_date}</td>
                 <td>$${b.total_amount}</td>
                 <td><span style="display:inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(218, 165, 32, 0.2); color: #daa520; font-size: 0.85rem; font-weight: 600;">${b.booking_status}</span></td>
+                <td>${actionBtn}</td>
               `;
                         tbody.appendChild(tr);
                     });
@@ -534,6 +546,10 @@
             } catch (e) {
                 console.error("Failed to load bookings", e);
             }
+        }
+        
+        async function viewTicket(bookingId) {
+            window.open(`boarding_pass.html?booking_id=${bookingId}`, '_blank');
         }
 
         // Profile load
@@ -641,12 +657,11 @@
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
-                alert(result.message);
+                // alert(result.message);
                 if(result.success) {
-                    document.getElementById('searchTransportForm').reset();
-                    document.getElementById('transportResults').innerHTML = '';
-                    fetchBookings();
-                    document.querySelector('[data-target="trips-section"]').click();
+                    window.location.href = `payment-checkout.html?booking_id=${result.data.booking_id}`;
+                } else {
+                    alert(result.message);
                 }
             } catch(e) { console.error(e); }
         }
@@ -665,12 +680,11 @@
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
-                alert(result.message);
+                // alert(result.message);
                 if(result.success) {
-                    document.getElementById('searchHotelsForm').reset();
-                    document.getElementById('hotelResults').innerHTML = '';
-                    fetchBookings();
-                    document.querySelector('[data-target="trips-section"]').click();
+                    window.location.href = `payment-checkout.html?booking_id=${result.data.booking_id}`;
+                } else {
+                    alert(result.message);
                 }
             } catch(e) { console.error(e); }
         }

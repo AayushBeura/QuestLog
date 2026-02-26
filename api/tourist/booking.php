@@ -41,14 +41,18 @@ if ($method === 'GET') {
         $transBookings = $stmtTrans->fetchAll();
 
         // Combine and sort
-        $bookings = array_merge($hotelBookings, $transBookings);
+        $allBookings = array_merge($hotelBookings, $transBookings);
         
-        // Sort descending by booking date simply
-        usort($bookings, function($a, $b) {
+        // Sort all bookings descending by booking date simply
+        usort($allBookings, function($a, $b) {
             return strtotime($b['booking_date']) - strtotime($a['booking_date']);
         });
 
-        sendJsonResponse(true, 'Bookings fetched successfully.', $bookings, 200);
+        sendJsonResponse(true, 'Bookings fetched successfully.', [
+            'all' => $allBookings,
+            'hotels' => $hotelBookings,
+            'transports' => $transBookings
+        ], 200);
 
     } catch (\PDOException $e) {
         error_log('Booking Fetch Error: ' . $e->getMessage());
@@ -73,7 +77,25 @@ if ($method === 'GET') {
     try {
         $pdo->beginTransaction();
 
+        // Check for existing duplicate booking to prevent double booking by the same user
+        $dupCheckSql = "SELECT id FROM bookings WHERE user_id = ? AND type = ? AND entity_id = ? AND booking_status != 'Cancelled'";
+        $dupParams = [$user_id, $type, $entity_id];
+
+        if ($type === 'Hotel') {
+            $dupCheckSql .= " AND start_date = ? AND end_date = ?";
+            $dupParams[] = $start_date;
+            $dupParams[] = $end_date;
+        }
+
+        $stmtDup = $pdo->prepare($dupCheckSql);
+        $stmtDup->execute($dupParams);
+        if ($stmtDup->fetch()) {
+            throw new Exception("You already have an active booking for this " . strtolower($type) . " on the selected dates.");
+        }
+
         $total_amount = 0;
+        $tax_rate = 0.12; // 12% Tax
+        $service_fee = 5.00; // Flat service fee
 
         if ($type === 'Hotel') {
             // Verify hotel exists and calculate amount
@@ -95,7 +117,11 @@ if ($method === 'GET') {
             $interval = $datetime1->diff($datetime2);
             $days = $interval->days > 0 ? $interval->days : 1;
 
-            $total_amount = $hotel['price_per_night'] * $days * $guests_count; // Assuming "guests" relates to room count for simplicity; adjust logic as needed
+            $subtotal = $hotel['price_per_night'] * $days * $guests_count;
+            $tax = $subtotal * $tax_rate;
+            $cgst = $tax / 2;
+            $sgst = $tax / 2;
+            $total_amount = $subtotal + $tax + $service_fee;
 
             // Update availability
             $pdo->prepare("UPDATE hotels SET rooms_available = rooms_available - 1 WHERE id = ?")->execute([$entity_id]);
@@ -109,20 +135,31 @@ if ($method === 'GET') {
                 throw new Exception("Transport not found or insufficient seats available.");
             }
 
-            $total_amount = $transport['price'] * $guests_count;
+            $subtotal = $transport['price'] * $guests_count;
+            $tax = $subtotal * $tax_rate;
+            $cgst = $tax / 2;
+            $sgst = $tax / 2;
+            $total_amount = $subtotal + $tax + $service_fee;
 
             // Update availability
             $pdo->prepare("UPDATE transports SET available_seats = available_seats - ? WHERE id = ?")->execute([$guests_count, $entity_id]);
         }
 
-        // Insert booking record
-        $stmt = $pdo->prepare("INSERT INTO bookings (user_id, type, entity_id, start_date, end_date, guests_count, total_amount) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        // Insert booking record with 'Pending Payment' status
+        $stmt = $pdo->prepare("INSERT INTO bookings (user_id, type, entity_id, start_date, end_date, guests_count, total_amount, payment_status, booking_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Pending', 'Pending Payment')");
         $stmt->execute([$user_id, $type, $entity_id, $start_date, $end_date, $guests_count, $total_amount]);
         $booking_id = $pdo->lastInsertId();
 
         $pdo->commit();
 
-        sendJsonResponse(true, 'Booking successful.', ['booking_id' => $booking_id, 'total_amount' => $total_amount], 201);
+        sendJsonResponse(true, 'Booking initialized. Please proceed to payment.', [
+            'booking_id' => $booking_id, 
+            'subtotal' => round($subtotal, 2),
+            'cgst' => round($cgst, 2),
+            'sgst' => round($sgst, 2),
+            'service_fee' => $service_fee,
+            'total_amount' => round($total_amount, 2)
+        ], 201);
 
     } catch (Exception $e) {
         $pdo->rollBack();

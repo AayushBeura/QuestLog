@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Boarding Pass</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing:border-box;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#d8d8d8;
+    font-family: 'Montserrat', sans-serif;
+    padding:20px;
+}
+
+.ticket-container{
+    width:1100px;
+    min-height:280px;
+    background:#e9e4d8;
+    border-radius:25px;
+    display:flex;
+    box-shadow:0 15px 40px rgba(0,0,0,0.2);
+}
+
+/* LEFT SECTION */
+
+.left{
+    flex:2;
+    padding:20px 25px;
+    position:relative;
+}
+
+.top-bar{
+    background:#4a2c2a;
+    color:#d4af37;
+    padding: 18px 18px;
+    font-weight:600;
+    letter-spacing:2px;
+    border-top-left-radius:25px;
+    font-size:14px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    position:relative;
+}
+
+.top-bar .brand{
+    position:absolute;
+    left: 18px;
+    color:#d4af37;
+    font-weight:700;
+}
+
+.top-bar .title{
+    font-size:16px;
+    letter-spacing:3px;
+}
+.top-bar span{
+    font-size:20px;
+}
+
+.passenger-name{
+    margin-top:10px;
+}
+
+.passenger-name h4{
+    font-size:9px;
+    letter-spacing:1px;
+    color:#7b6d63;
+    margin-bottom:3px;
+}
+
+.passenger-name h1{
+    font-family: 'Playfair Display', serif;
+    font-size:24px;
+    color:#3b2a26;
+}
+
+.info-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+    margin-top:12px;
+}
+
+.info-box h5{
+    font-size:8px;
+    letter-spacing:0.5px;
+    color:#7b6d63;
+}
+
+.info-box p{
+    font-size:12px;
+    font-weight:600;
+    margin-top:2px;
+    color:#3b2a26;
+}
+
+/* DIVIDER */
+
+.divider{
+    width:2px;
+    background:repeating-linear-gradient(
+        to bottom,
+        transparent,
+        transparent 6px,
+        #bfb7a6 6px,
+        #bfb7a6 12px
+    );
+    position:relative;
+}
+
+.divider::before,
+.divider::after{
+    content:"";
+    width:20px;
+    height:20px;
+    background:#d8d8d8;
+    border-radius:50%;
+    position:absolute;
+    left:50%;
+    transform:translateX(-50%);
+}
+
+.divider::before{
+    top:-10px;
+}
+
+.divider::after{
+    bottom:-10px;
+}
+
+/* RIGHT SECTION */
+
+.right{
+    flex:1;
+    padding:20px 20px;
+    position:relative;
+}
+
+.right .top-bar{
+    border-top-left-radius:0;
+    border-top-right-radius:0;
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+}
+
+.top-bar .title{
+    font-size:14px;
+    color:#d4af37;
+    letter-spacing:2px;
+    font-weight:600;
+}
+
+.top-bar .subtitle{
+    font-size:12px;
+    color:#d4af37;
+    letter-spacing:2px;
+    font-weight:500;
+}
+
+.mini-details{
+    margin-top:10px;
+}
+
+.mini-details h4{
+    font-size:9px;
+    letter-spacing:1px;
+    color:#7b6d63;
+}
+
+.mini-details h2{
+    font-family:'Playfair Display', serif;
+    font-size:18px;
+    margin:2px 0 10px;
+    color:#3b2a26;
+}
+
+.row{
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:8px;
+}
+
+.row div h5{
+    font-size:8px;
+    color:#7b6d63;
+}
+
+.row div p{
+    font-weight:600;
+    margin-top:2px;
+    font-size:11px;
+    color:#3b2a26;
+}
+
+.barcode{
+    margin-top:10px;
+    height:35px;
+    background:repeating-linear-gradient(
+        to right,
+        #333,
+        #333 2px,
+        transparent 2px,
+        transparent 4px
+    );
+}
+
+
+
+</style>
+</head>
+
+<body>
+
+<div class="ticket-container">
+
+    <!-- LEFT SIDE -->
+    <div class="left">
+
+        <div class="top-bar">
+            <span class="brand">Questlog</span>
+            <span class="title">BOARDING PASS</span>
+        </div>
+
+        <div class="passenger-name">
+            <h4>NAME OF PASSENGER</h4>
+            <h1>BENJAMIN SHAH</h1>
+        </div>
+
+        <div class="info-grid">
+
+            <div class="info-box">
+                <h5>PRICE</h5>
+                <p>$100</p>
+            </div>
+
+            <div class="info-box">
+                <h5>TRAIN</h5>
+                <p>1234</p>
+            </div>
+
+            <div class="info-box">
+                <h5>FROM</h5>
+                <p>NEW YORK</p>
+            </div>
+
+            <div class="info-box">
+                <h5>DEPARTURE</h5>
+                <p>07:00 AM</p>
+            </div>
+
+            <div class="info-box">
+                <h5>TO</h5>
+                <p>LOS ANGELES</p>
+            </div>
+
+            <div class="info-box">
+                <h5>ARRIVE</h5>
+                <p>10:00 AM</p>
+            </div>
+
+            <div class="info-box">
+                <h5>DATE</h5>
+                <p>15 AUG 22</p>
+            </div>
+
+            <div class="info-box">
+                <h5>SEAT</h5>
+                <p>A3</p>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- RIGHT SIDE -->
+    <div class="right">
+
+        <div class="top-bar">
+            <span class="title">BOARDING PASS</span>
+            <span class="subtitle">ECONOMY CLASS</span>
+        </div>
+
+        <div class="mini-details">
+
+            <h4>NAME OF PASSENGER</h4>
+            <h2>BENJAMIN SHAH</h2>
+
+            <div class="row">
+                <div>
+                    <h5>FROM</h5>
+                    <p>NEW YORK</p>
+                </div>
+                <div>
+                    <h5>TO</h5>
+                    <p>LOS ANGELES</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <h5>TRAIN</h5>
+                    <p>1234</p>
+                </div>
+                <div>
+                    <h5>SEAT</h5>
+                    <p>A3</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div>
+                    <h5>DATE</h5>
+                    <p>15 AUG 22</p>
+                </div>
+                <div>
+                    <h5>TIME</h5>
+                    <p>07:00</p>
+                </div>
+            </div>
+
+            <div class="barcode"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    async function loadTicket() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookingId = urlParams.get('booking_id');
+        if (!bookingId) {
+            alert('No booking ID provided');
+            return;
+        }
+        
+        try {
+            const res = await fetch(`api/tourist/ticket.php?booking_id=${bookingId}`);
+            const data = await res.json();
+            
+            if (data.success) {
+                const t = data.data;
+                const b = t.booking;
+                const e = t.entity;
+
+                if (b.booking_status !== 'Confirmed' && b.booking_status !== 'Completed') {
+                    document.body.innerHTML = `<div style="text-align: center; font-family: 'Poppins', sans-serif; color: #ff6b6b; font-size: 1.5rem; margin-top: 20vh;">
+                        <h2>Ticket Unavailable</h2>
+                        <p>This booking is currently <strong>${b.booking_status}</strong>.</p>
+                        <p>You can only view tickets for Confirmed bookings.</p>
+                        <br><button onclick="window.close()" style="padding: 10px 20px; font-size: 1rem; cursor: pointer;">Close Window</button>
+                    </div>`;
+                    return;
+                }
+                
+                // Fetch profile to get name
+                const profRes = await fetch('api/tourist/profile.php');
+                let passengerName = "GUEST";
+                if(profRes.ok) {
+                    const profData = await profRes.json();
+                    if(profData.data && profData.data.name) {
+                        passengerName = profData.data.name.toUpperCase();
+                    }
+                }
+                
+                document.querySelector('.passenger-name h1').innerText = passengerName;
+                document.querySelector('.mini-details h2').innerText = passengerName;
+                
+                const type = b.type;
+                const isHotel = type === 'Hotel';
+                
+                document.querySelectorAll('.title')[0].innerText = type.toUpperCase() + " BOOKING";
+                document.querySelectorAll('.title')[1].innerText = type.toUpperCase() + " BOOKING";
+                
+                const infoBoxes = document.querySelectorAll('.info-box');
+                infoBoxes[0].querySelector('p').innerText = `$${b.total_amount}`; // PRICE
+                
+                if (isHotel) {
+                    infoBoxes[1].querySelector('h5').innerText = "HOTEL";
+                    infoBoxes[1].querySelector('p').innerText = e.name;
+                    infoBoxes[2].querySelector('h5').innerText = "LOCATION";
+                    infoBoxes[2].querySelector('p').innerText = e.location.split(',')[0];
+                    infoBoxes[3].querySelector('h5').innerText = "CHECK-IN";
+                    infoBoxes[3].querySelector('p').innerText = b.start_date;
+                    infoBoxes[4].querySelector('h5').innerText = "GUESTS";
+                    infoBoxes[4].querySelector('p').innerText = b.guests_count;
+                    infoBoxes[5].querySelector('h5').innerText = "CHECK-OUT";
+                    infoBoxes[5].querySelector('p').innerText = b.end_date;
+                    infoBoxes[6].querySelector('h5').innerText = "BOOKING ID";
+                    infoBoxes[6].querySelector('p').innerText = `#${b.id}`;
+                    infoBoxes[7].querySelector('h5').innerText = "STATUS";
+                    infoBoxes[7].querySelector('p').innerText = b.payment_status;
+                } else {
+                    infoBoxes[1].querySelector('h5').innerText = "TYPE";
+                    infoBoxes[1].querySelector('p').innerText = e.type.toUpperCase();
+                    infoBoxes[2].querySelector('h5').innerText = "FROM";
+                    infoBoxes[2].querySelector('p').innerText = e.source;
+                    infoBoxes[3].querySelector('h5').innerText = "DEPARTURE";
+                    infoBoxes[3].querySelector('p').innerText = e.departure_time;
+                    infoBoxes[4].querySelector('h5').innerText = "TO";
+                    infoBoxes[4].querySelector('p').innerText = e.destination;
+                    infoBoxes[5].querySelector('h5').innerText = "DATE";
+                    infoBoxes[5].querySelector('p').innerText = e.departure_date;
+                    infoBoxes[6].querySelector('h5').innerText = "GUESTS";
+                    infoBoxes[6].querySelector('p').innerText = b.guests_count;
+                    infoBoxes[7].querySelector('h5').innerText = "STATUS";
+                    infoBoxes[7].querySelector('p').innerText = b.payment_status;
+                }
+                
+                const rows = document.querySelectorAll('.mini-details .row p');
+                if (isHotel) {
+                    rows[0].innerText = e.location.split(',')[0]; // FROM -> LOCATION
+                    rows[1].innerText = e.name; // TO -> HOTEL
+                    rows[2].innerText = `GUESTS: ${b.guests_count}`; // TRAIN -> DETAILS
+                    rows[3].innerText = `#${b.id}`; // SEAT -> ID
+                    rows[4].innerText = b.start_date; // DATE
+                    rows[5].innerText = b.end_date; // TIME -> CHECKOUT
+                    
+                    document.querySelectorAll('.mini-details .row h5')[0].innerText = "LOCATION";
+                    document.querySelectorAll('.mini-details .row h5')[1].innerText = "HOTEL";
+                    document.querySelectorAll('.mini-details .row h5')[2].innerText = "DETAILS";
+                    document.querySelectorAll('.mini-details .row h5')[3].innerText = "ID";
+                    document.querySelectorAll('.mini-details .row h5')[5].innerText = "CHECK-OUT";
+                } else {
+                    rows[0].innerText = e.source;
+                    rows[1].innerText = e.destination;
+                    rows[2].innerText = e.type.toUpperCase();
+                    rows[3].innerText = "N/A"; // SEAT
+                    rows[4].innerText = e.departure_date;
+                    rows[5].innerText = e.departure_time;
+                }
+                
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+    
+    document.addEventListener('DOMContentLoaded', loadTicket);
+</script>
+</body>
+</html>
