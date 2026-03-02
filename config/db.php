@@ -2,7 +2,7 @@
 // config/db.php
 
 $host = '127.0.0.1'; // XAMPP default
-$port = '3307';
+$port = '3306';
 $db   = 'questlog_db';
 $user = 'root'; // XAMPP default user
 $pass = ''; // XAMPP default password (empty)

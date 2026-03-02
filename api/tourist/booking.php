@@ -181,28 +181,52 @@ if ($method === 'GET') {
         $stmt->execute([$user_id, $type, $entity_id, $start_date, $end_date, $guests_count, $total_amount]);
         $booking_id = $pdo->lastInsertId();
 
-        // --- Auto-assign consecutive seat numbers for Transport bookings ---
-        // Count ALL existing passengers for this transport (including cancelled)
-        // so that cancelled seats are never re-assigned to new passengers.
-        $seatsPerRow = 5; // 5 seats per row: A1-A5, B1-B5, C1-C5, ...
-        $seatStartIndex = 0;
+        // --- Auto-assign seats for Transport bookings ---
+        // Finds the first block of N consecutive available seats.
+        // Cancelled seats are treated as available, so they get reused.
+        $seatsPerRow = 5; // A1-A5, B1-B5, C1-C5, ...
         $assignedSeats = [];
 
         if ($type === 'Transport') {
-            $stmtSeatCount = $pdo->prepare(
-                "SELECT COUNT(*) as cnt FROM booking_passengers bp
+            // Get all OCCUPIED seat numbers (only confirmed passengers)
+            $stmtOccupied = $pdo->prepare(
+                "SELECT bp.seat_number FROM booking_passengers bp
                  JOIN bookings b ON bp.booking_id = b.id
-                 WHERE b.entity_id = ? AND b.type = 'Transport'"
+                 WHERE b.entity_id = ? AND b.type = 'Transport'
+                   AND bp.passenger_status != 'Cancelled'
+                   AND bp.seat_number IS NOT NULL"
             );
-            $stmtSeatCount->execute([$entity_id]);
-            $seatStartIndex = (int)$stmtSeatCount->fetch()['cnt'];
+            $stmtOccupied->execute([$entity_id]);
+            $occupiedSeats = array_flip($stmtOccupied->fetchAll(PDO::FETCH_COLUMN));
 
-            // Generate consecutive seat labels for each passenger
-            for ($i = 0; $i < count($passengers); $i++) {
-                $idx = $seatStartIndex + $i;
-                $rowLetter = chr(65 + intdiv($idx, $seatsPerRow)); // A, B, C, ...
-                $colNumber = ($idx % $seatsPerRow) + 1;            // 1-5
-                $assignedSeats[] = $rowLetter . $colNumber;
+            $neededSeats = count($passengers);
+
+            // Helper: convert index to seat label
+            $seatLabel = function($idx) use ($seatsPerRow) {
+                $row = chr(65 + intdiv($idx, $seatsPerRow));
+                $col = ($idx % $seatsPerRow) + 1;
+                return $row . $col;
+            };
+
+            // Scan from seat index 0 to find N consecutive available seats
+            $maxScan = 200; // safety limit
+            $startIdx = 0;
+            while ($startIdx < $maxScan) {
+                $block = [];
+                $allFree = true;
+                for ($j = 0; $j < $neededSeats; $j++) {
+                    $label = $seatLabel($startIdx + $j);
+                    if (isset($occupiedSeats[$label])) {
+                        $allFree = false;
+                        $startIdx = $startIdx + $j + 1; // skip past the occupied seat
+                        break;
+                    }
+                    $block[] = $label;
+                }
+                if ($allFree) {
+                    $assignedSeats = $block;
+                    break;
+                }
             }
         }
 
