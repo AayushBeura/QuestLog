@@ -29,6 +29,14 @@ if ($method === 'GET') {
         $stmt = $pdo->query($sql);
         $bookings = $stmt->fetchAll();
 
+        // Attach passengers for each booking
+        $stmtPass = $pdo->prepare("SELECT id, passenger_name, passenger_age, passenger_gender, id_type, id_number, seat_number, passenger_status FROM booking_passengers WHERE booking_id = ?");
+        foreach ($bookings as &$b) {
+            $stmtPass->execute([$b['booking_id']]);
+            $b['passengers'] = $stmtPass->fetchAll();
+        }
+        unset($b);
+
         sendJsonResponse(true, 'Bookings fetched successfully.', $bookings, 200);
 
     } catch (\PDOException $e) {

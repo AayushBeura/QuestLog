@@ -442,6 +442,61 @@
             gap: 15px;
             margin-bottom: 20px;
         }
+
+        /* View/Edit Passenger Details Modal Cards */
+        .detail-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(218, 165, 32, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .detail-card h4 {
+            color: #daa520;
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detail-card .detail-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .detail-card .detail-info .field-label {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 3px;
+        }
+
+        .detail-card .edit-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .detail-card .edit-row input,
+        .detail-card .edit-row select {
+            flex: 1;
+            min-width: 120px;
+            padding: 8px 12px;
+            font-size: 0.85rem;
+        }
+
+        .btn-sm {
+            padding: 6px 14px;
+            font-size: 0.75rem;
+            border-radius: 6px;
+        }
     </style>
 </head>
 
@@ -500,7 +555,7 @@
                         </select>
                         <input type="text" id="transportSource" name="source" placeholder="Source" required />
                         <input type="text" id="transportDest" name="destination" placeholder="Destination" required />
-                        <input type="date" name="date" required />
+                        <input type="date" name="date" id="transportSearchDate" required />
                         <button type="submit" class="btn">Search</button>
                     </form>
                     <div id="transportResults"></div>
@@ -614,6 +669,18 @@
         </div>
     </div>
 
+    <!-- View/Edit Passenger Details Modal -->
+    <div id="viewDetailsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="viewDetailsTitle">Passenger Details</h3>
+            <div id="viewDetailsBody"></div>
+            <div class="modal-actions">
+                <button class="btn-cancel"
+                    onclick="document.getElementById('viewDetailsModal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="locations.js"></script>
     <script>
         // Initialize autocomplete on source and destination fields
@@ -622,6 +689,14 @@
             enableLocationAutocomplete('transportDest');
             enableLocationAutocomplete('hotelLocation');
             enableLocationAutocomplete('itDest');
+
+            // Set min date to today on all date inputs to prevent past-date bookings
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
+            ['transportSearchDate', 'modalStartDate', 'modalEndDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.min = todayStr;
+            });
         });
 
         // Navigation Logic
@@ -654,13 +729,17 @@
                     tbody.innerHTML = '';
                     const bookings = data.data.all || data.data;
                     bookings.forEach(b => {
-                        let actionBtn = '';
+                        let actionBtns = '';
+                        // View Details button — always shown if there are passengers
+                        if (b.passengers && b.passengers.length > 0) {
+                            actionBtns += `<button class="btn btn-sm" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom:4px;" onclick='viewBookingDetails(${b.booking_id}, ${JSON.stringify(b.passengers).replace(/'/g, "&#39;")})'>View Details</button> `;
+                        }
                         if (b.booking_status === 'Confirmed' || b.booking_status === 'Completed') {
-                            actionBtn = `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewTicket(${b.booking_id})">View Ticket</button>`;
+                            actionBtns += `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem;" onclick="viewTicket(${b.booking_id})">View Ticket</button>`;
                         } else if (b.booking_status === 'Pending Payment') {
-                            actionBtn = `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #4cd137 0%, #44bd32 100%);" onclick="window.location.href='payment-checkout.html?booking_id=${b.booking_id}'">Continue with Payment</button>`;
+                            actionBtns += `<button class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: linear-gradient(135deg, #4cd137 0%, #44bd32 100%);" onclick="window.location.href='payment-checkout.html?booking_id=${b.booking_id}'">Continue with Payment</button>`;
                         } else if (b.booking_status === 'Cancelled') {
-                            actionBtn = `<span style="color: #ff6b6b; font-size: 0.85rem; font-weight: 600;">Cancelled</span>`;
+                            actionBtns += `<span style="color: #ff6b6b; font-size: 0.85rem; font-weight: 600;">Cancelled</span>`;
                         }
 
                         // [ADDED] Build passenger names list with status and cancel buttons
@@ -689,7 +768,7 @@
                 <td>${b.start_date || b.booking_date}</td>
                 <td>$${b.total_amount}</td>
                 <td><span style="display:inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(218, 165, 32, 0.2); color: #daa520; font-size: 0.85rem; font-weight: 600;">${b.booking_status}</span></td>
-                <td>${actionBtn}</td>
+                <td>${actionBtns}</td>
               `;
                         tbody.appendChild(tr);
                     });
@@ -701,6 +780,94 @@
 
         async function viewTicket(bookingId) {
             window.open(`boarding_pass.html?booking_id=${bookingId}`, '_blank');
+        }
+
+        // View/Edit passenger details for a booking
+        function viewBookingDetails(bookingId, passengers) {
+            const modal = document.getElementById('viewDetailsModal');
+            const body = document.getElementById('viewDetailsBody');
+            document.getElementById('viewDetailsTitle').textContent = `Booking #${bookingId} — Passenger Details`;
+
+            let html = '';
+            passengers.forEach((p, idx) => {
+                const isCancelled = p.passenger_status === 'Cancelled';
+                const statusColor = isCancelled ? '#ff6b6b' : '#4cd137';
+                const editDisabled = isCancelled ? 'disabled' : '';
+                html += `<div class="detail-card" id="detailCard${p.id}">
+                    <h4>
+                        <span>Passenger ${idx + 1}: <span style="color:${statusColor}">(${p.passenger_status})</span></span>
+                        ${!isCancelled ? `<button class="btn btn-sm" onclick="toggleEditPassenger(${p.id})">Edit</button>` : ''}
+                    </h4>
+                    <div class="detail-info" id="detailView${p.id}">
+                        <div><span class="field-label">Name</span>${p.passenger_name}</div>
+                        <div><span class="field-label">Age</span>${p.passenger_age || 'N/A'}</div>
+                        <div><span class="field-label">Gender</span>${p.passenger_gender || 'N/A'}</div>
+                        <div><span class="field-label">ID Type</span>${p.id_type || 'N/A'}</div>
+                        <div><span class="field-label">ID Number</span>${p.id_number || 'N/A'}</div>
+                        <div><span class="field-label">Seat</span>${p.seat_number || 'N/A'}</div>
+                    </div>
+                    <div class="edit-row" id="detailEdit${p.id}" style="display:none;">
+                        <input type="text" id="editName${p.id}" value="${p.passenger_name || ''}" placeholder="Name" ${editDisabled} />
+                        <input type="number" id="editAge${p.id}" value="${p.passenger_age || ''}" placeholder="Age" min="0" max="120" ${editDisabled} />
+                        <select id="editGender${p.id}" ${editDisabled}>
+                            <option value="">Gender</option>
+                            <option value="Male" ${p.passenger_gender === 'Male' ? 'selected' : ''}>Male</option>
+                            <option value="Female" ${p.passenger_gender === 'Female' ? 'selected' : ''}>Female</option>
+                            <option value="Other" ${p.passenger_gender === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                        <select id="editIdType${p.id}" ${editDisabled}>
+                            <option value="">ID Type</option>
+                            <option value="Aadhaar" ${p.id_type === 'Aadhaar' ? 'selected' : ''}>Aadhaar</option>
+                            <option value="Passport" ${p.id_type === 'Passport' ? 'selected' : ''}>Passport</option>
+                            <option value="Driving License" ${p.id_type === 'Driving License' ? 'selected' : ''}>Driving License</option>
+                            <option value="Other" ${p.id_type === 'Other' ? 'selected' : ''}>Other</option>
+                        </select>
+                        <input type="text" id="editIdNum${p.id}" value="${p.id_number || ''}" placeholder="ID Number" ${editDisabled} />
+                        <button class="btn btn-sm" onclick="savePassengerEdit(${p.id}, ${bookingId})">Save</button>
+                        <button class="btn-cancel" style="padding:6px 14px; font-size:0.75rem;" onclick="toggleEditPassenger(${p.id})">Cancel</button>
+                    </div>
+                </div>`;
+            });
+            body.innerHTML = html;
+            modal.classList.add('active');
+        }
+
+        function toggleEditPassenger(passengerId) {
+            const viewEl = document.getElementById(`detailView${passengerId}`);
+            const editEl = document.getElementById(`detailEdit${passengerId}`);
+            if (editEl.style.display === 'none') {
+                editEl.style.display = 'flex';
+                viewEl.style.display = 'none';
+            } else {
+                editEl.style.display = 'none';
+                viewEl.style.display = 'flex';
+            }
+        }
+
+        async function savePassengerEdit(passengerId, bookingId) {
+            const payload = {
+                passenger_id: passengerId,
+                passenger_name: document.getElementById(`editName${passengerId}`).value,
+                passenger_age: document.getElementById(`editAge${passengerId}`).value || null,
+                passenger_gender: document.getElementById(`editGender${passengerId}`).value || null,
+                id_type: document.getElementById(`editIdType${passengerId}`).value || null,
+                id_number: document.getElementById(`editIdNum${passengerId}`).value || null
+            };
+            try {
+                const res = await fetch('api/tourist/update_passenger.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('Passenger details updated!');
+                    document.getElementById('viewDetailsModal').classList.remove('active');
+                    fetchBookings(); // Refresh table
+                } else {
+                    alert(result.message || 'Update failed.');
+                }
+            } catch (e) { console.error(e); alert('Error updating passenger.'); }
         }
 
         // [ADDED] Per-passenger cancellation function
@@ -848,13 +1015,24 @@
         }
 
         // [ADDED] Dynamically generate passenger input forms based on guest count
+        // Preserves existing filled forms; adds/removes from end (bottom)
         function updatePassengerForms() {
             const count = parseInt(document.getElementById('modalGuestCount').value) || 1;
             const container = document.getElementById('passengerFormsContainer');
-            container.innerHTML = '';
-            for (let i = 1; i <= count; i++) {
-                container.innerHTML += `
-                    <div class="passenger-entry">
+            const currentEntries = container.querySelectorAll('.passenger-entry');
+            const currentCount = currentEntries.length;
+
+            if (count < currentCount) {
+                // Remove from bottom
+                for (let i = currentCount; i > count; i--) {
+                    container.removeChild(currentEntries[i - 1]);
+                }
+            } else if (count > currentCount) {
+                // Add new forms at bottom
+                for (let i = currentCount + 1; i <= count; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'passenger-entry';
+                    div.innerHTML = `
                         <h4>Passenger ${i}</h4>
                         <div class="form-row">
                             <div style="flex:2;"><input type="text" id="pName${i}" placeholder="Full Name *" required /></div>
@@ -880,8 +1058,44 @@
                             </div>
                             <div style="flex:1;"><input type="text" id="pIdNum${i}" placeholder="ID Number" /></div>
                         </div>
-                    </div>
-                `;
+                    `;
+                    container.appendChild(div);
+                }
+            }
+            // If count == currentCount == 0, generate the first form
+            if (count > 0 && container.querySelectorAll('.passenger-entry').length === 0) {
+                for (let i = 1; i <= count; i++) {
+                    const div = document.createElement('div');
+                    div.className = 'passenger-entry';
+                    div.innerHTML = `
+                        <h4>Passenger ${i}</h4>
+                        <div class="form-row">
+                            <div style="flex:2;"><input type="text" id="pName${i}" placeholder="Full Name *" required /></div>
+                            <div style="flex:1;"><input type="number" id="pAge${i}" placeholder="Age" min="0" max="120" /></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex:1;">
+                                <select id="pGender${i}">
+                                    <option value="">Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;">
+                                <select id="pIdType${i}">
+                                    <option value="">ID Type</option>
+                                    <option value="Aadhaar">Aadhaar</option>
+                                    <option value="Passport">Passport</option>
+                                    <option value="Driving License">Driving License</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;"><input type="text" id="pIdNum${i}" placeholder="ID Number" /></div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
             }
         }
 
