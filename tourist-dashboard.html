@@ -7,7 +7,9 @@
     <title>QuestLog - Dashboard</title>
     <!-- Keep existing styles if any globals appply, but we will rely mostly on our inline or combined styles to ensure it looks right -->
     <link rel="stylesheet" href="styles.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -23,8 +25,10 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: rgba(8, 8, 12, 0.65); /* Adjusted transparency to reveal more background */
-            backdrop-filter: blur(12px); /* Blur effect for the background */
+            background: rgba(8, 8, 12, 0.65);
+            /* Adjusted transparency to reveal more background */
+            backdrop-filter: blur(12px);
+            /* Blur effect for the background */
             -webkit-backdrop-filter: blur(12px);
             z-index: -1;
         }
@@ -97,6 +101,7 @@
             padding-bottom: 30px;
             color: #ff6b6b;
         }
+
         #logoutBtn:hover {
             background: rgba(255, 107, 107, 0.1);
             color: #ff8787;
@@ -154,7 +159,7 @@
             margin-bottom: 35px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(218, 165, 32, 0.2);
         }
@@ -203,10 +208,11 @@
             letter-spacing: 1px;
             background: rgba(0, 0, 0, 0.2);
         }
-        
+
         table th:first-child {
             border-top-left-radius: 8px;
         }
+
         table th:last-child {
             border-top-right-radius: 8px;
         }
@@ -249,7 +255,7 @@
             border-color: rgba(218, 165, 32, 0.8);
             box-shadow: 0 0 16px rgba(218, 165, 32, 0.15);
         }
-        
+
         select option {
             background: #1a1a1f;
             color: #fff;
@@ -301,7 +307,7 @@
             gap: 20px;
             margin-bottom: 20px;
         }
-        
+
         /* Flex form styling */
         .search-form {
             display: flex;
@@ -309,10 +315,12 @@
             margin-bottom: 25px;
             flex-wrap: wrap;
         }
-        .search-form > * {
+
+        .search-form>* {
             flex: 1;
             min-width: 150px;
         }
+
         .search-form button {
             flex: 0 0 auto;
         }
@@ -323,23 +331,116 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.2);
         }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(218, 165, 32, 0.4);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(218, 165, 32, 0.7);
+        }
+
+        /* [ADDED](mypart) Passenger Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(25, 25, 32, 0.95);
+            border: 1px solid rgba(218, 165, 32, 0.3);
+            border-radius: 20px;
+            padding: 35px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content h3 {
+            font-family: 'Bree Serif', serif;
+            color: #daa520;
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .passenger-entry {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(218, 165, 32, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .passenger-entry h4 {
+            color: #daa520;
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+        }
+
+        .passenger-entry .form-row {
+            margin-bottom: 10px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-cancel {
+            padding: 14px 28px;
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+            border: 1px solid rgba(255, 107, 107, 0.4);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            font-family: 'Poppins', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .guest-count-selector {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -372,6 +473,8 @@
                                 <th>Booking ID</th>
                                 <th>Type</th>
                                 <th>Details</th>
+                                <!-- [ADDED] Passengers column -->
+                                <th>Passengers</th>
                                 <th>Date</th>
                                 <th>Amount</th>
                                 <th>Status</th>
@@ -419,23 +522,29 @@
             <!-- Itinerary Section -->
             <section id="itinerary-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <h3 style="margin: 0; border: none; padding: 0;">My Itineraries</h3>
                         <button id="showCreateItinerary" class="btn">+ Create New</button>
                     </div>
-                    
-                    <div id="createItineraryFormContainer" style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
+
+                    <div id="createItineraryFormContainer"
+                        style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
                         <h4>Create Trip Profile</h4>
                         <form id="createItineraryForm" style="display: flex; flex-direction:column; gap: 15px;">
                             <div class="form-row" style="margin-bottom: 0;">
-                                <input type="text" id="itName" placeholder="Trip Name (e.g. Summer in Paris)" required />
+                                <input type="text" id="itName" placeholder="Trip Name (e.g. Summer in Paris)"
+                                    required />
                                 <input type="text" id="itDest" placeholder="Destination" required />
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Start Date</label><input type="date" id="itStart" required /></div>
-                                <div style="flex:1;"><label>End Date</label><input type="date" id="itEnd" required /></div>
+                                <div style="flex:1;"><label>Start Date</label><input type="date" id="itStart"
+                                        required /></div>
+                                <div style="flex:1;"><label>End Date</label><input type="date" id="itEnd" required />
+                                </div>
                             </div>
-                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save Itinerary</button>
+                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save
+                                Itinerary</button>
                         </form>
                     </div>
                     <table id="itinerariesTable">
@@ -479,6 +588,30 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <!-- [ADDED] (MY PART)Passenger Details Modal - Collects individual passenger info for group bookings -->
+    <div id="passengerModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modalTitle">Passenger Details</h3>
+            <div class="guest-count-selector">
+                <label style="margin-bottom:0;">Number of Guests:</label>
+                <input type="number" id="modalGuestCount" min="1" max="20" value="1" style="width:80px;" />
+                <button type="button" class="btn" style="padding:8px 16px; font-size:0.85rem;"
+                    onclick="updatePassengerForms()">Update</button>
+            </div>
+            <div id="passengerFormsContainer"></div>
+            <div id="hotelDatesContainer" style="display:none; margin-bottom:15px;">
+                <div class="form-row">
+                    <div style="flex:1;"><label>Check-in Date</label><input type="date" id="modalStartDate" /></div>
+                    <div style="flex:1;"><label>Check-out Date</label><input type="date" id="modalEndDate" /></div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn" onclick="submitBookingFromModal()">Confirm Booking</button>
+                <button class="btn-cancel" onclick="closePassengerModal()">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <script src="locations.js"></script>
@@ -530,11 +663,29 @@
                             actionBtn = `<span style="color: #ff6b6b; font-size: 0.85rem; font-weight: 600;">Cancelled</span>`;
                         }
 
+                        // [ADDED] Build passenger names list with status and cancel buttons
+                        let passengerNames = '-';
+                        if (b.passengers && b.passengers.length > 0) {
+                            passengerNames = b.passengers.map(p => {
+                                const isCancelled = p.passenger_status === 'Cancelled';
+                                const statusColor = isCancelled ? '#ff6b6b' : '#4cd137';
+                                const statusText = isCancelled ? '✗' : '✓';
+                                const cancelBtn = (!isCancelled && b.booking_status === 'Confirmed')
+                                    ? `<button onclick="cancelPassenger(${b.booking_id}, ${p.id})" style="background:none;border:none;color:#ff6b6b;cursor:pointer;font-size:0.75rem;text-decoration:underline;padding:0 0 0 4px;">cancel</button>`
+                                    : '';
+                                return `<span style="color:${statusColor}">${statusText}</span> ${p.passenger_name}${cancelBtn}`;
+                            }).join('<br>');
+                        } else {
+                            passengerNames = `${b.guests_count} guest(s)`;
+                        }
+
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
                 <td>#${b.booking_id}</td>
                 <td>${b.type}</td>
                 <td>${b.entity_name}</td>
+                <!-- [ADDED] Passengers column data -->
+                <td style="font-size:0.85rem;">${passengerNames}</td>
                 <td>${b.start_date || b.booking_date}</td>
                 <td>$${b.total_amount}</td>
                 <td><span style="display:inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(218, 165, 32, 0.2); color: #daa520; font-size: 0.85rem; font-weight: 600;">${b.booking_status}</span></td>
@@ -547,9 +698,24 @@
                 console.error("Failed to load bookings", e);
             }
         }
-        
+
         async function viewTicket(bookingId) {
             window.open(`boarding_pass.html?booking_id=${bookingId}`, '_blank');
+        }
+
+        // [ADDED] Per-passenger cancellation function
+        async function cancelPassenger(bookingId, passengerId) {
+            if (!confirm('Cancel this passenger? Their seat will be restored.')) return;
+            try {
+                const res = await fetch('api/tourist/cancel_booking.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ booking_id: bookingId, passenger_id: passengerId })
+                });
+                const result = await res.json();
+                alert(result.message);
+                fetchBookings(); // Refresh the bookings table
+            } catch (e) { console.error(e); }
         }
 
         // Profile load
@@ -617,7 +783,7 @@
                 } else {
                     container.innerHTML = '<p style="color: #ff6b6b; margin-top: 15px;">No transport found for this route and date.</p>';
                 }
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         });
 
         document.getElementById('searchHotelsForm').addEventListener('submit', async (e) => {
@@ -644,35 +810,118 @@
                 } else {
                     container.innerHTML = '<p style="color: #ff6b6b; margin-top: 15px;">No hotels found in this location.</p>';
                 }
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         });
 
-        async function bookTransport(id) {
-            if(!confirm("Confirm booking this transport?")) return;
-            const payload = { type: 'Transport', entity_id: id, guests_count: 1 };
-            try {
-                const res = await fetch('api/tourist/booking.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                const result = await res.json();
-                // alert(result.message);
-                if(result.success) {
-                    window.location.href = `payment-checkout.html?booking_id=${result.data.booking_id}`;
-                } else {
-                    alert(result.message);
-                }
-            } catch(e) { console.error(e); }
+
+
+
+        // [ADDED] Passenger modal state variables
+        let currentBookingType = '';
+        let currentEntityId = 0;
+
+        // [ADDED] Open the passenger modal for transport bookings
+        function bookTransport(id) {
+            currentBookingType = 'Transport';
+            currentEntityId = id;
+            document.getElementById('modalTitle').textContent = 'Transport Booking - Passenger Details';
+            document.getElementById('hotelDatesContainer').style.display = 'none';
+            document.getElementById('modalGuestCount').value = 1;
+            updatePassengerForms();
+            document.getElementById('passengerModal').classList.add('active');
         }
 
-        async function bookHotel(id) {
-            const startDate = prompt("Enter check-in date (YYYY-MM-DD):");
-            if(!startDate) return;
-            const endDate = prompt("Enter check-out date (YYYY-MM-DD):");
-            if(!endDate) return;
-            
-            const payload = { type: 'Hotel', entity_id: id, guests_count: 1, start_date: startDate, end_date: endDate };
+        // [ADDED] Open the passenger modal for hotel bookings
+        function bookHotel(id) {
+            currentBookingType = 'Hotel';
+            currentEntityId = id;
+            document.getElementById('modalTitle').textContent = 'Hotel Booking - Guest Details';
+            document.getElementById('hotelDatesContainer').style.display = 'block';
+            document.getElementById('modalGuestCount').value = 1;
+            updatePassengerForms();
+            document.getElementById('passengerModal').classList.add('active');
+        }
+
+        // [ADDED] Close the passenger modal
+        function closePassengerModal() {
+            document.getElementById('passengerModal').classList.remove('active');
+        }
+
+        // [ADDED] Dynamically generate passenger input forms based on guest count
+        function updatePassengerForms() {
+            const count = parseInt(document.getElementById('modalGuestCount').value) || 1;
+            const container = document.getElementById('passengerFormsContainer');
+            container.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+                container.innerHTML += `
+                    <div class="passenger-entry">
+                        <h4>Passenger ${i}</h4>
+                        <div class="form-row">
+                            <div style="flex:2;"><input type="text" id="pName${i}" placeholder="Full Name *" required /></div>
+                            <div style="flex:1;"><input type="number" id="pAge${i}" placeholder="Age" min="0" max="120" /></div>
+                        </div>
+                        <div class="form-row">
+                            <div style="flex:1;">
+                                <select id="pGender${i}">
+                                    <option value="">Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;">
+                                <select id="pIdType${i}">
+                                    <option value="">ID Type</option>
+                                    <option value="Aadhaar">Aadhaar</option>
+                                    <option value="Passport">Passport</option>
+                                    <option value="Driving License">Driving License</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div style="flex:1;"><input type="text" id="pIdNum${i}" placeholder="ID Number" /></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // [ADDED] Collect passenger data from modal and submit the booking
+        async function submitBookingFromModal() {
+            const guestCount = parseInt(document.getElementById('modalGuestCount').value) || 1;
+            const passengers = [];
+
+            for (let i = 1; i <= guestCount; i++) {
+                const name = document.getElementById(`pName${i}`).value.trim();
+                if (!name) {
+                    alert(`Please enter the name for Passenger ${i}.`);
+                    return;
+                }
+                passengers.push({
+                    passenger_name: name,
+                    passenger_age: document.getElementById(`pAge${i}`).value || null,
+                    passenger_gender: document.getElementById(`pGender${i}`).value || null,
+                    id_type: document.getElementById(`pIdType${i}`).value || null,
+                    id_number: document.getElementById(`pIdNum${i}`).value || null
+                });
+            }
+
+            const payload = {
+                type: currentBookingType,
+                entity_id: currentEntityId,
+                guests_count: guestCount,
+                passengers: passengers
+            };
+
+            // [ADDED] Add hotel dates if booking type is Hotel
+            if (currentBookingType === 'Hotel') {
+                payload.start_date = document.getElementById('modalStartDate').value;
+                payload.end_date = document.getElementById('modalEndDate').value;
+                if (!payload.start_date || !payload.end_date) {
+                    alert('Please enter check-in and check-out dates.');
+                    return;
+                }
+            }
+
             try {
                 const res = await fetch('api/tourist/booking.php', {
                     method: 'POST',
@@ -680,19 +929,19 @@
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
-                // alert(result.message);
-                if(result.success) {
+                if (result.success) {
+                    closePassengerModal();
                     window.location.href = `payment-checkout.html?booking_id=${result.data.booking_id}`;
                 } else {
                     alert(result.message);
                 }
-            } catch(e) { console.error(e); }
+            } catch (e) { console.error(e); }
         }
 
         // Itinerary loading/creation logic
         document.getElementById('showCreateItinerary').addEventListener('click', () => {
             const formContainer = document.getElementById('createItineraryFormContainer');
-            if(formContainer.style.display === 'none') {
+            if (formContainer.style.display === 'none') {
                 formContainer.style.display = 'block';
                 formContainer.style.animation = 'slideIn 0.3s ease forwards';
             } else {
