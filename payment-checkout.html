@@ -245,7 +245,16 @@
 
                 <div class="buttons-wrapper">
                     <button class="btn" id="payBtn">Proceed to Pay</button>
-                    <button class="btn btn-cancel" onclick="window.location.href='tourist-dashboard.html#trips';">Back to Dashboard</button>
+                    <button class="btn btn-cancel" id="cancelBtn" onclick="window.location.href='tourist-dashboard.html#trips';">Back to Dashboard</button>
+                </div>
+
+                <!-- QR Container for UPI (Hidden by default) -->
+                <div id="qr-container" style="display:none; text-align:center; padding: 20px; background: rgba(0, 0, 0, 0.4); border-radius:15px; margin-top: 20px; border: 1px solid rgba(218, 165, 32, 0.3);">
+                    <h3 style="font-family:'Bree Serif', serif; color:#daa520; margin-top:0;">Scan to Pay</h3>
+                    <img id="qr-image" src="" width="200" style="border-radius:10px; margin: 10px 0;" />
+                    <h4 id="qr-timer" style="color:rgba(255,255,255,0.9); margin-bottom: 5px;">Time left: 05:00</h4>
+                    <p id="qr-status" style="font-size: 0.95rem; color: rgba(255,255,255,0.7); margin-top: 0;">Waiting for you to scan...</p>
+                    <button class="btn btn-cancel" style="margin-top: 15px; padding: 10px;" id="cancelQrBtn">Cancel UPI</button>
                 </div>
             </div>
         </div>
@@ -302,10 +311,101 @@
             } catch (err) { console.error(err); }
         }
 
+        let qrTimerInterval;
+
         document.getElementById('payBtn').addEventListener('click', async () => {
             const mode = document.querySelector('input[name="payMethod"]:checked').value;
-            const totalAmount = parseFloat(document.getElementById('totalAmount').textContent.replace('$', ''));
+            const totalAmountStr = document.getElementById('totalAmount').textContent;
+            let totalAmount = 0;
+            if(totalAmountStr.includes('$')) {
+               totalAmount = parseFloat(totalAmountStr.replace('$', ''));
+            } else {
+               totalAmount = parseFloat(totalAmountStr);
+            }
 
+            if (mode === "UPI") {
+                // Determine the host for node backend. Assume it runs on port 3000 locally.
+                let nodeHost = window.location.hostname;
+                if (!nodeHost || nodeHost === "") nodeHost = "localhost";
+                
+                document.getElementById('payBtn').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
+                document.getElementById('qr-container').style.display = 'block';
+                document.getElementById('qr-status').innerText = "Generating QR Code...";
+                document.getElementById('qr-image').style.display = 'none';
+
+                try {
+                    const res = await fetch(`http://${nodeHost}:3000/api/qr?amount=${totalAmount}&bookingId=${bookingId}`);
+                    const data = await res.json();
+                    
+                    document.getElementById('qr-image').src = data.qr;
+                    document.getElementById('qr-image').style.display = 'inline-block';
+                    document.getElementById('qr-status').innerText = "Waiting for you to scan and pay...";
+                    
+                    const ws = new WebSocket(`ws://${nodeHost}:3000`);
+                    ws.onopen = () => ws.send(data.sessionId);
+                    
+                    let timeLeft = 300;
+                    document.getElementById('qr-timer').innerText = `Time left: 05:00`;
+                    document.getElementById('qr-timer').style.color = "rgba(255,255,255,0.9)";
+                    clearInterval(qrTimerInterval);
+
+                    qrTimerInterval = setInterval(() => {
+                        timeLeft--;
+                        const m = String(Math.floor(timeLeft / 60)).padStart(2, '0');
+                        const s = String(timeLeft % 60).padStart(2, '0');
+                        document.getElementById('qr-timer').innerText = `Time left: ${m}:${s}`;
+                        
+                        if (timeLeft <= 0) {
+                            clearInterval(qrTimerInterval);
+                            document.getElementById('qr-status').innerText = "Payment Unsuccessful - Time Expired";
+                            document.getElementById('qr-status').style.color = "#ff6b6b";
+                            resetPayButtons();
+                        }
+                    }, 1000);
+
+                    ws.onmessage = async (msg) => {
+                        if (msg.data === "confirmed") {
+                            clearInterval(qrTimerInterval);
+                            document.getElementById('qr-status').innerText = "Payment Successful ✅ Completing booking...";
+                            document.getElementById('qr-status').style.color = "#4cd137";
+                            ws.close();
+                            await completePaymentBackend("UPI", totalAmount);
+                        } else if (msg.data === "expired") {
+                            clearInterval(qrTimerInterval);
+                            document.getElementById('qr-status').innerText = "Payment Unsuccessful - Time Expired";
+                            document.getElementById('qr-status').style.color = "#ff6b6b";
+                            ws.close();
+                            resetPayButtons();
+                        }
+                    }
+
+                    document.getElementById('cancelQrBtn').onclick = () => {
+                        clearInterval(qrTimerInterval);
+                        ws.close();
+                        document.getElementById('qr-container').style.display = 'none';
+                        document.getElementById('payBtn').style.display = 'block';
+                        document.getElementById('cancelBtn').style.display = 'block';
+                    };
+                } catch(e) {
+                    console.error("Failed to fetch QR", e);
+                    alert("Failed to connect to UPI service. Make sure server.js is running.");
+                    resetPayButtons();
+                }
+            } else {
+                await completePaymentBackend(mode, totalAmount);
+            }
+        });
+
+        function resetPayButtons() {
+            setTimeout(() => {
+                document.getElementById('qr-container').style.display = 'none';
+                document.getElementById('payBtn').style.display = 'block';
+                document.getElementById('cancelBtn').style.display = 'block';
+            }, 3000);
+        }
+
+        async function completePaymentBackend(mode, amount) {
             try {
                 const res = await fetch('api/tourist/payment.php', {
                     method: 'POST',
@@ -313,7 +413,7 @@
                     body: JSON.stringify({ 
                         booking_id: bookingId, 
                         payment_method: mode,
-                        amount: totalAmount 
+                        amount: amount 
                     })
                 });
                 const data = await res.json();
@@ -324,7 +424,7 @@
                     alert(data.message);
                 }
             } catch (err) { console.error(err); }
-        });
+        }
 
         loadDetails();
     </script>
