@@ -121,7 +121,9 @@ if ($method === 'GET') {
         $stmtDup = $pdo->prepare($dupCheckSql);
         $stmtDup->execute($dupParams);
         if ($stmtDup->fetch()) {
-            throw new Exception("You already have an active booking for this " . strtolower($type) . " on the selected dates.");
+            if (!isset($data['force_duplicate']) || $data['force_duplicate'] !== true) {
+                throw new Exception("DUPLICATE_BOOKING");
+            }
         }
 
         $total_amount = 0;

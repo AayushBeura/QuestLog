@@ -11,12 +11,16 @@
         href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <style>
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background: #000 url('assets/background_balitemple.png') no-repeat center center fixed;
-            background-size: cover;
+            background: url('assets/background_balitemple.png') no-repeat center center fixed !important;
+            background-size: cover !important;
             color: #fff;
         }
 
@@ -35,7 +39,8 @@
 
         .dashboard-container {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Glassmorphism Sidebar */
@@ -49,6 +54,8 @@
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .sidebar-logo {
@@ -112,6 +119,7 @@
             flex: 1;
             padding: 40px 60px;
             overflow-y: auto;
+            height: 100vh;
         }
 
         header {
@@ -360,6 +368,32 @@
             background: rgba(218, 165, 32, 0.7);
         }
 
+        .filter-select {
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(218, 165, 32, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+            max-width: 20%;
+            min-width: 140px;
+        }
+        .filter-select:hover, .filter-select:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(218, 165, 32, 0.8);
+        }
+        .filter-select option {
+            background: #1a1a1f;
+        }
+
         /* [ADDED](mypart) Passenger Modal Styles */
         .modal-overlay {
             display: none;
@@ -521,7 +555,17 @@
             <!-- Trips Section -->
             <section id="trips-section" class="content-section">
                 <div class="card">
-                    <h3>Your Bookings</h3>
+                    <div style="position: relative; margin-bottom: 25px; min-height: 32px;">
+                        <h3 style="margin: 0; border: none; padding: 0;">Your Bookings</h3>
+                        <select id="touristBookingFilter" class="filter-select" onchange="filterTouristBookings(this.value)">
+                            <option value="all">All Time</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="last_6_months">Last 6 Months</option>
+                            <option value="last_year">Last Year</option>
+                            <option value="older">Older than a year</option>
+                        </select>
+                    </div>
                     <table id="bookingsTable">
                         <thead>
                             <tr>
@@ -720,16 +764,45 @@
         });
 
         // Fetch Bookings on Load
+        let allTouristBookings = [];
         async function fetchBookings() {
             try {
                 const res = await fetch('api/tourist/booking.php');
                 const data = await res.json();
                 if (data.success) {
-                    const tbody = document.querySelector('#bookingsTable tbody');
-                    tbody.innerHTML = '';
-                    const bookings = data.data.all || data.data;
-                    bookings.forEach(b => {
-                        let actionBtns = '';
+                    allTouristBookings = data.data.all || data.data;
+                    renderTouristBookings(allTouristBookings);
+                }
+            } catch (e) {
+                console.error("Failed to load bookings", e);
+            }
+        }
+
+        function filterTouristBookings(filterType) {
+            if (!allTouristBookings || allTouristBookings.length === 0) return;
+            const now = new Date();
+            let filtered = allTouristBookings.filter(b => {
+                const bDateStr = b.start_date || b.booking_date;
+                if (!bDateStr) return true;
+                const bDate = new Date(bDateStr);
+                const diffTime = Math.abs(now - bDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (filterType === 'last_week') return diffDays <= 7;
+                if (filterType === 'last_month') return diffDays > 7 && diffDays <= 30;
+                if (filterType === 'last_6_months') return diffDays > 30 && diffDays <= 180;
+                if (filterType === 'last_year') return diffDays > 180 && diffDays <= 365;
+                if (filterType === 'older') return diffDays > 365;
+                return true;
+            });
+            renderTouristBookings(filtered);
+        }
+
+        function renderTouristBookings(bookings) {
+            const tbody = document.querySelector('#bookingsTable tbody');
+            tbody.innerHTML = '';
+            bookings.forEach(b => {
+                let actionBtns = '';
                         // View Details button — always shown if there are passengers
                         if (b.passengers && b.passengers.length > 0) {
                             actionBtns += `<button class="btn btn-sm" style="padding: 6px 12px; font-size: 0.8rem; margin-bottom:4px;" onclick='viewBookingDetails(${b.booking_id}, ${JSON.stringify(b.passengers).replace(/'/g, "&#39;")})'>View Details</button> `;
@@ -770,12 +843,8 @@
                 <td><span style="display:inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(218, 165, 32, 0.2); color: #daa520; font-size: 0.85rem; font-weight: 600;">${b.booking_status}</span></td>
                 <td>${actionBtns}</td>
               `;
-                        tbody.appendChild(tr);
-                    });
-                }
-            } catch (e) {
-                console.error("Failed to load bookings", e);
-            }
+                tbody.appendChild(tr);
+            });
         }
 
         async function viewTicket(bookingId) {
@@ -1147,7 +1216,25 @@
                     closePassengerModal();
                     window.location.href = `payment-checkout.html?booking_id=${result.data.booking_id}`;
                 } else {
-                    alert(result.message);
+                    if (result.message === "DUPLICATE_BOOKING") {
+                        if (confirm("You already have an existing active booking on the selected dates. Do you still want to continuously book this?")) {
+                            payload.force_duplicate = true;
+                            const res2 = await fetch('api/tourist/booking.php', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify(payload)
+                            });
+                            const result2 = await res2.json();
+                            if (result2.success) {
+                                closePassengerModal();
+                                window.location.href = `payment-checkout.html?booking_id=${result2.data.booking_id}`;
+                            } else {
+                                alert(result2.message);
+                            }
+                        }
+                    } else {
+                        alert(result.message);
+                    }
                 }
             } catch (e) { console.error(e); }
         }

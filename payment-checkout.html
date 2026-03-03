@@ -7,14 +7,18 @@
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background: #000 url('assets/background_balitemple.png') no-repeat center center fixed;
-            background-size: cover;
+            background: url('assets/background_balitemple.png') no-repeat center center fixed !important;
+            background-size: cover !important;
             color: #fff;
-            min-height: 100vh;
+            overflow-y: auto;
         }
 
         body::before {
