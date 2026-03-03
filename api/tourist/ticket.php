@@ -42,6 +42,15 @@ try {
     $stmtPay->execute([$booking_id]);
     $payment = $stmtPay->fetch();
 
+
+
+
+    //MY PART
+    // [ADDED] Fetch passengers for this booking from booking_passengers table
+    $stmtPassengers = $pdo->prepare("SELECT id, passenger_name, passenger_age, passenger_gender, id_type, id_number, seat_number, passenger_status FROM booking_passengers WHERE booking_id = ?");
+    $stmtPassengers->execute([$booking_id]);
+    $passengers = $stmtPassengers->fetchAll();
+
     // Recalculate price breakdown for display consistency
     $tax_rate = 0.12;
     $service_fee = 5.00;
@@ -60,10 +69,12 @@ try {
         'total_amount' => $total_from_db
     ];
 
+    // [MODIFIED] Added passengers array to the response
     sendJsonResponse(true, 'Ticket details fetched.', [
         'booking' => $booking,
         'entity' => $details,
         'payment' => $payment,
+        'passengers' => $passengers,      //my part
         'price_breakdown' => $price_breakdown
     ], 200);
 

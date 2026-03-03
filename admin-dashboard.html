@@ -7,14 +7,20 @@
     <title>QuestLog - Admin Dashboard</title>
     <!-- Keep existing styles if any globals appply, but we will rely mostly on our inline or combined styles to ensure it looks right -->
     <link rel="stylesheet" href="styles.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
+        html, body {
+            height: 100vh;
+            overflow: hidden;
+        }
         body {
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background: #000 url('assets/background_balitemple.png') no-repeat center center fixed;
-            background-size: cover;
+            background: url('assets/background_balitemple.png') no-repeat center center fixed !important;
+            background-size: cover !important;
             color: #fff;
         }
 
@@ -23,15 +29,18 @@
             content: '';
             position: fixed;
             inset: 0;
-            background: rgba(8, 8, 12, 0.65); /* Adjusted transparency to reveal more background */
-            backdrop-filter: blur(12px); /* Blur effect for the background */
+            background: rgba(8, 8, 12, 0.65);
+            /* Adjusted transparency to reveal more background */
+            backdrop-filter: blur(12px);
+            /* Blur effect for the background */
             -webkit-backdrop-filter: blur(12px);
             z-index: -1;
         }
 
         .dashboard-container {
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Glassmorphism Sidebar */
@@ -45,6 +54,8 @@
             display: flex;
             flex-direction: column;
             box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+            height: 100vh;
+            overflow-y: auto;
         }
 
         .sidebar-logo {
@@ -64,7 +75,8 @@
 
         /* Admin specific sidebar logo variation */
         .sidebar-logo span {
-            color: #d35400; /* Subtle orange tint for Admin */
+            color: #d35400;
+            /* Subtle orange tint for Admin */
             -webkit-text-fill-color: #d35400;
         }
 
@@ -103,6 +115,7 @@
             padding-bottom: 30px;
             color: #ff6b6b;
         }
+
         #logoutBtn:hover {
             background: rgba(255, 107, 107, 0.1);
             color: #ff8787;
@@ -113,6 +126,7 @@
             flex: 1;
             padding: 40px 60px;
             overflow-y: auto;
+            height: 100vh;
         }
 
         header {
@@ -142,7 +156,8 @@
         }
 
         .welcome-text span {
-            color: #e67e22; /* Admin specific color */
+            color: #e67e22;
+            /* Admin specific color */
             font-weight: 600;
             font-size: 1.2rem;
             letter-spacing: 0.5px;
@@ -160,7 +175,7 @@
             margin-bottom: 35px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        
+
         .card:hover {
             box-shadow: 0 16px 50px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(218, 165, 32, 0.2);
         }
@@ -202,10 +217,11 @@
             letter-spacing: 1px;
             background: rgba(0, 0, 0, 0.2);
         }
-        
+
         table th:first-child {
             border-top-left-radius: 8px;
         }
+
         table th:last-child {
             border-top-right-radius: 8px;
         }
@@ -247,7 +263,7 @@
             border-color: rgba(218, 165, 32, 0.8);
             box-shadow: 0 0 16px rgba(218, 165, 32, 0.15);
         }
-        
+
         select option {
             background: #1a1a1f;
             color: #fff;
@@ -290,6 +306,7 @@
             color: #fff;
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.2);
         }
+
         .btn-danger:hover {
             background: linear-gradient(135deg, #ff7979 0%, #eb4d4b 100%);
             box-shadow: 0 6px 20px rgba(231, 76, 60, 0.35);
@@ -300,6 +317,7 @@
             color: #fff;
             box-shadow: 0 4px 15px rgba(46, 204, 113, 0.2);
         }
+
         .btn-success:hover {
             background: linear-gradient(135deg, #58d68d 0%, #2ecc71 100%);
             box-shadow: 0 6px 20px rgba(46, 204, 113, 0.35);
@@ -318,23 +336,121 @@
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
         }
+
         ::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.2);
         }
+
         ::-webkit-scrollbar-thumb {
             background: rgba(218, 165, 32, 0.4);
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
             background: rgba(218, 165, 32, 0.7);
+        }
+
+        .filter-select {
+            padding: 4px 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(218, 165, 32, 0.4);
+            border-radius: 6px;
+            color: #fff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.8rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: auto;
+            max-width: 20%;
+            min-width: 140px;
+        }
+        .filter-select:hover, .filter-select:focus {
+            background: rgba(0, 0, 0, 0.6);
+            border-color: rgba(218, 165, 32, 0.8);
+        }
+        .filter-select option {
+            background: #1a1a1f;
+        }
+
+        /* Booking Details Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(25, 25, 32, 0.95);
+            border: 1px solid rgba(218, 165, 32, 0.3);
+            border-radius: 20px;
+            padding: 35px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+        }
+
+        .modal-content h3 {
+            font-family: 'Bree Serif', serif;
+            color: #daa520;
+            margin-bottom: 20px;
+            margin-top: 0;
+        }
+
+        .passenger-card {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(218, 165, 32, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+        }
+
+        .passenger-card h4 {
+            color: #daa520;
+            margin: 0 0 8px 0;
+            font-size: 0.95rem;
+        }
+
+        .passenger-card .detail-row {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 4px;
+        }
+
+        .passenger-card .detail-row span {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.8rem;
         }
     </style>
 </head>
@@ -381,12 +497,14 @@
             <!-- Hotels Section -->
             <section id="hotels-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <h3 style="margin: 0; border: none; padding: 0;">Registered Hotels</h3>
                         <button id="showAddHotel" class="btn">+ Add Hotel</button>
                     </div>
 
-                    <div id="addHotelFormContainer" style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
+                    <div id="addHotelFormContainer"
+                        style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
                         <h4>Add New Hotel</h4>
                         <form id="addHotelForm" style="display: flex; flex-direction:column; gap: 15px;">
                             <div class="form-row" style="margin-bottom: 0;">
@@ -397,10 +515,13 @@
                                 <input type="text" id="hDescription" placeholder="Description" required />
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Price per night</label><input type="number" step="0.01" id="hPrice" required /></div>
-                                <div style="flex:1;"><label>Rooms Available</label><input type="number" id="hRooms" required /></div>
+                                <div style="flex:1;"><label>Price per night</label><input type="number" step="0.01"
+                                        id="hPrice" required /></div>
+                                <div style="flex:1;"><label>Rooms Available</label><input type="number" id="hRooms"
+                                        required /></div>
                             </div>
-                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save Hotel</button>
+                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save
+                                Hotel</button>
                         </form>
                     </div>
                     <table id="hotelsTable">
@@ -424,12 +545,14 @@
             <!-- Transport Section -->
             <section id="transports-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                         <h3 style="margin: 0; border: none; padding: 0;">Transport Inventory</h3>
                         <button id="showAddTransport" class="btn">+ Add Transport</button>
                     </div>
 
-                    <div id="addTransportFormContainer" style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
+                    <div id="addTransportFormContainer"
+                        style="display:none; margin-bottom: 30px; background: rgba(0,0,0,0.2); padding: 25px; border-radius: 12px; border: 1px solid rgba(218, 165, 32, 0.2);">
                         <h4>Add New Transport</h4>
                         <form id="addTransportForm" style="display: flex; flex-direction:column; gap: 15px;">
                             <div class="form-row" style="margin-bottom: 0;">
@@ -441,18 +564,25 @@
                                         <option value="Bus">🚌 Bus</option>
                                     </select>
                                 </div>
-                                <div style="flex:1;"><label>Source</label><input type="text" id="tSource" placeholder="New York" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Destination</label><input type="text" id="tDestination" placeholder="London" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Source</label><input type="text" id="tSource"
+                                        placeholder="New York" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Destination</label><input type="text" id="tDestination"
+                                        placeholder="London" required style="width: 100%;" /></div>
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Departure Date</label><input type="date" id="tDate" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Departure Time</label><input type="time" id="tTime" required style="width: 100%;" step="60" /></div>
+                                <div style="flex:1;"><label>Departure Date</label><input type="date" id="tDate" required
+                                        style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Departure Time</label><input type="time" id="tTime" required
+                                        style="width: 100%;" step="60" /></div>
                             </div>
                             <div class="form-row" style="margin-bottom: 0;">
-                                <div style="flex:1;"><label>Price</label><input type="number" step="0.01" id="tPrice" required style="width: 100%;" /></div>
-                                <div style="flex:1;"><label>Total Seats</label><input type="number" id="tSeats" required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Price</label><input type="number" step="0.01" id="tPrice"
+                                        required style="width: 100%;" /></div>
+                                <div style="flex:1;"><label>Total Seats</label><input type="number" id="tSeats" required
+                                        style="width: 100%;" /></div>
                             </div>
-                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save Transport</button>
+                            <button type="submit" class="btn" style="align-self: flex-start; margin-top: 10px;">Save
+                                Transport</button>
                         </form>
                     </div>
                     <table id="transportsTable">
@@ -476,7 +606,17 @@
             <!-- Bookings Management Section -->
             <section id="bookings-section" class="content-section" style="display: none;">
                 <div class="card">
-                    <h3>Platform Bookings</h3>
+                    <div style="position: relative; margin-bottom: 25px; min-height: 32px;">
+                        <h3 style="margin: 0; border: none; padding: 0;">Platform Bookings</h3>
+                        <select id="adminBookingFilter" class="filter-select" onchange="filterAdminBookings(this.value)">
+                            <option value="all">All Time</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="last_6_months">Last 6 Months</option>
+                            <option value="last_year">Last Year</option>
+                            <option value="older">Older than a year</option>
+                        </select>
+                    </div>
                     <table id="adminBookingsTable">
                         <thead>
                             <tr>
@@ -499,6 +639,18 @@
         </main>
     </div>
 
+    <!-- Booking Details Modal -->
+    <div id="bookingDetailsModal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="detailsModalTitle">Booking Details</h3>
+            <div id="detailsModalBody"></div>
+            <div style="margin-top:20px; text-align:right;">
+                <button class="btn"
+                    onclick="document.getElementById('bookingDetailsModal').classList.remove('active')">Close</button>
+            </div>
+        </div>
+    </div>
+
     <script src="locations.js"></script>
     <script>
         // Initialize autocomplete on source and destination fields
@@ -506,7 +658,7 @@
             enableLocationAutocomplete('hLocation');
             enableLocationAutocomplete('tSource');
             enableLocationAutocomplete('tDestination');
-            
+
             const tDateInput = document.getElementById('tDate');
             if (tDateInput) {
                 const today = new Date();
@@ -709,15 +861,43 @@
         }
 
         // Logic to fetch Bookings
+        let allAdminBookings = [];
         async function fetchBookings() {
             try {
                 const res = await fetch('api/admin/manage_bookings.php');
                 const data = await res.json();
                 if (data.success) {
-                    const tbody = document.querySelector('#adminBookingsTable tbody');
-                    tbody.innerHTML = '';
-                    data.data.forEach(b => {
-                        const tr = document.createElement('tr');
+                    allAdminBookings = data.data;
+                    renderAdminBookings(allAdminBookings);
+                }
+            } catch (e) { console.error("Failed to load admin bookings", e); }
+        }
+
+        function filterAdminBookings(filterType) {
+            if (!allAdminBookings || allAdminBookings.length === 0) return;
+            const now = new Date();
+            let filtered = allAdminBookings.filter(b => {
+                const bDateStr = b.start_date || b.booking_date;
+                if (!bDateStr) return true;
+                const bDate = new Date(bDateStr);
+                const diffTime = Math.abs(now - bDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                if (filterType === 'last_week') return diffDays <= 7;
+                if (filterType === 'last_month') return diffDays > 7 && diffDays <= 30;
+                if (filterType === 'last_6_months') return diffDays > 30 && diffDays <= 180;
+                if (filterType === 'last_year') return diffDays > 180 && diffDays <= 365;
+                if (filterType === 'older') return diffDays > 365;
+                return true;
+            });
+            renderAdminBookings(filtered);
+        }
+
+        function renderAdminBookings(bookings) {
+            const tbody = document.querySelector('#adminBookingsTable tbody');
+            tbody.innerHTML = '';
+            bookings.forEach(b => {
+                const tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td>#${b.booking_id}</td>
                             <td><strong>${b.user_name}</strong> <br><small style="color: rgba(255,255,255,0.6);">${b.user_email}</small></td>
@@ -726,6 +906,7 @@
                             <td>$${b.total_amount}</td>
                             <td><span style="display:inline-block; padding: 4px 10px; border-radius: 6px; background: rgba(218, 165, 32, 0.2); color: #daa520; font-size: 0.85rem; font-weight: 600;">${b.booking_status}</span></td>
                             <td>
+                                <button class="btn" style="margin-bottom:4px;" onclick='viewBookingDetails(${b.booking_id}, ${JSON.stringify(b.passengers || []).replace(/'/g, "&#39;")})'>View Details</button>
                                 <select onchange="updateBookingStatus(${b.booking_id}, this.value)">
                                     <option value="" disabled selected>Change Status</option>
                                     <option value="Confirmed" ${b.booking_status === 'Confirmed' ? 'disabled' : ''}>Confirmed</option>
@@ -735,9 +916,7 @@
                             </td>
                         `;
                         tbody.appendChild(tr);
-                    });
-                }
-            } catch (e) { console.error("Failed to load admin bookings", e); }
+            });
         }
 
         async function updateBookingStatus(id, newStatus) {
@@ -759,6 +938,36 @@
             } catch (err) { console.error('Error logging out', err); }
             window.location.href = 'index.html';
         });
+
+        // View booking passenger details
+        function viewBookingDetails(bookingId, passengers) {
+            const modal = document.getElementById('bookingDetailsModal');
+            const body = document.getElementById('detailsModalBody');
+            document.getElementById('detailsModalTitle').textContent = `Booking #${bookingId} — Passenger Details`;
+
+            if (!passengers || passengers.length === 0) {
+                body.innerHTML = '<p style="color: rgba(255,255,255,0.6);">No passenger details recorded for this booking.</p>';
+            } else {
+                let html = '';
+                passengers.forEach((p, idx) => {
+                    const statusColor = p.passenger_status === 'Cancelled' ? '#ff6b6b' : '#4cd137';
+                    html += `<div class="passenger-card">
+                        <h4>Passenger ${idx + 1}: ${p.passenger_name} <span style="color:${statusColor}; font-size:0.8rem; font-weight:400;">(${p.passenger_status})</span></h4>
+                        <div class="detail-row">
+                            <div><span>Age:</span> ${p.passenger_age || 'N/A'}</div>
+                            <div><span>Gender:</span> ${p.passenger_gender || 'N/A'}</div>
+                            <div><span>Seat:</span> ${p.seat_number || 'N/A'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div><span>ID Type:</span> ${p.id_type || 'N/A'}</div>
+                            <div><span>ID Number:</span> ${p.id_number || 'N/A'}</div>
+                        </div>
+                    </div>`;
+                });
+                body.innerHTML = html;
+            }
+            modal.classList.add('active');
+        }
 
         // Init
         fetchUsers();

@@ -63,6 +63,29 @@ CREATE TABLE IF NOT EXISTS bookings (
     -- Note: entity_id is a programmatic foreign key because it can link to two different tables
 );
 
+
+
+
+--  Booking Passengers Table - Stores individual passenger details for each booking
+-- Supports multiple passengers per booking (e.g., 1 user booking for 4 people)
+CREATE TABLE IF NOT EXISTS booking_passengers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    booking_id INT NOT NULL,
+    passenger_name VARCHAR(100) NOT NULL,
+    passenger_age INT,
+    passenger_gender ENUM('Male', 'Female', 'Other') NOT NULL,
+    id_type VARCHAR(30),          -- e.g. 'Aadhaar', 'Passport', 'Driving License'
+    id_number VARCHAR(20),       -- document number
+    seat_number VARCHAR(10),      -- optional, for transport bookings
+    -- [ADDED] Per-passenger status for individual cancellation
+    passenger_status ENUM('Confirmed', 'Cancelled') DEFAULT 'Confirmed',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX (booking_id),
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE CASCADE
+);
+
+
+
 -- Itineraries Table
 CREATE TABLE IF NOT EXISTS itineraries (
     id INT AUTO_INCREMENT PRIMARY KEY,

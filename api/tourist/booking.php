@@ -48,6 +48,22 @@ if ($method === 'GET') {
             return strtotime($b['booking_date']) - strtotime($a['booking_date']);
         });
 
+
+
+
+       //MY PART
+
+        // [ADDED] Fetch passengers for each booking and attach them
+        $stmtPassengers = $pdo->prepare("SELECT id, passenger_name, passenger_age, passenger_gender, id_type, id_number, seat_number, passenger_status FROM booking_passengers WHERE booking_id = ?");
+        foreach ($allBookings as &$booking) {
+            $stmtPassengers->execute([$booking['booking_id']]);
+            $booking['passengers'] = $stmtPassengers->fetchAll();
+        }
+        unset($booking); // break reference
+
+
+
+
         sendJsonResponse(true, 'Bookings fetched successfully.', [
             'all' => $allBookings,
             'hotels' => $hotelBookings,
@@ -69,9 +85,24 @@ if ($method === 'GET') {
     $guests_count = isset($data['guests_count']) ? (int)$data['guests_count'] : 1;
     $start_date = isset($data['start_date']) ? sanitizeInput($data['start_date']) : null;
     $end_date = isset($data['end_date']) ? sanitizeInput($data['end_date']) : null;
+   
+   
+    // [ADDED] Accept passengers array from request body(MY PART)
+    $passengers = isset($data['passengers']) && is_array($data['passengers']) ? $data['passengers'] : [];
 
     if (!in_array($type, ['Hotel', 'Transport']) || $entity_id <= 0) {
         sendJsonResponse(false, 'Invalid booking parameters.', [], 400);
+    }
+
+    // [ADDED] Validate passengers array matches guests_count
+    if (count($passengers) > 0 && count($passengers) !== $guests_count) {
+        sendJsonResponse(false, 'Number of passengers must match guests count.', [], 400);
+    }
+    // [ADDED] Validate each passenger has at least a name
+    foreach ($passengers as $p) {
+        if (!isset($p['passenger_name']) || trim($p['passenger_name']) === '') {
+            sendJsonResponse(false, 'Each passenger must have a name.', [], 400);
+        }
     }
 
     try {
@@ -90,7 +121,9 @@ if ($method === 'GET') {
         $stmtDup = $pdo->prepare($dupCheckSql);
         $stmtDup->execute($dupParams);
         if ($stmtDup->fetch()) {
-            throw new Exception("You already have an active booking for this " . strtolower($type) . " on the selected dates.");
+            if (!isset($data['force_duplicate']) || $data['force_duplicate'] !== true) {
+                throw new Exception("DUPLICATE_BOOKING");
+            }
         }
 
         $total_amount = 0;
@@ -150,6 +183,72 @@ if ($method === 'GET') {
         $stmt->execute([$user_id, $type, $entity_id, $start_date, $end_date, $guests_count, $total_amount]);
         $booking_id = $pdo->lastInsertId();
 
+        // --- Auto-assign seats for Transport bookings ---
+        // Finds the first block of N consecutive available seats.
+        // Cancelled seats are treated as available, so they get reused.
+        $seatsPerRow = 5; // A1-A5, B1-B5, C1-C5, ...
+        $assignedSeats = [];
+
+        if ($type === 'Transport') {
+            // Get all OCCUPIED seat numbers (only confirmed passengers)
+            $stmtOccupied = $pdo->prepare(
+                "SELECT bp.seat_number FROM booking_passengers bp
+                 JOIN bookings b ON bp.booking_id = b.id
+                 WHERE b.entity_id = ? AND b.type = 'Transport'
+                   AND bp.passenger_status != 'Cancelled'
+                   AND bp.seat_number IS NOT NULL"
+            );
+            $stmtOccupied->execute([$entity_id]);
+            $occupiedSeats = array_flip($stmtOccupied->fetchAll(PDO::FETCH_COLUMN));
+
+            $neededSeats = count($passengers);
+
+            // Helper: convert index to seat label
+            $seatLabel = function($idx) use ($seatsPerRow) {
+                $row = chr(65 + intdiv($idx, $seatsPerRow));
+                $col = ($idx % $seatsPerRow) + 1;
+                return $row . $col;
+            };
+
+            // Scan from seat index 0 to find N consecutive available seats
+            $maxScan = 200; // safety limit
+            $startIdx = 0;
+            while ($startIdx < $maxScan) {
+                $block = [];
+                $allFree = true;
+                for ($j = 0; $j < $neededSeats; $j++) {
+                    $label = $seatLabel($startIdx + $j);
+                    if (isset($occupiedSeats[$label])) {
+                        $allFree = false;
+                        $startIdx = $startIdx + $j + 1; // skip past the occupied seat
+                        break;
+                    }
+                    $block[] = $label;
+                }
+                if ($allFree) {
+                    $assignedSeats = $block;
+                    break;
+                }
+            }
+        }
+
+        // [ADDED] Insert each passenger into booking_passengers table(MY PART)
+        if (count($passengers) > 0) {
+            $stmtPass = $pdo->prepare("INSERT INTO booking_passengers (booking_id, passenger_name, passenger_age, passenger_gender, id_type, id_number, seat_number, passenger_status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Confirmed')");
+            foreach ($passengers as $i => $p) {
+                $seatNumber = isset($assignedSeats[$i]) ? $assignedSeats[$i] : null;
+                $stmtPass->execute([
+                    $booking_id,
+                    sanitizeInput($p['passenger_name']),
+                    isset($p['passenger_age']) ? (int)$p['passenger_age'] : null,
+                    isset($p['passenger_gender']) ? sanitizeInput($p['passenger_gender']) : null,
+                    isset($p['id_type']) ? sanitizeInput($p['id_type']) : null,
+                    isset($p['id_number']) ? sanitizeInput($p['id_number']) : null,
+                    $seatNumber
+                ]);
+            }
+        }
+
         $pdo->commit();
 
         sendJsonResponse(true, 'Booking initialized. Please proceed to payment.', [
@@ -158,7 +257,8 @@ if ($method === 'GET') {
             'cgst' => round($cgst, 2),
             'sgst' => round($sgst, 2),
             'service_fee' => $service_fee,
-            'total_amount' => round($total_amount, 2)
+            'total_amount' => round($total_amount, 2),
+            'assigned_seats' => $assignedSeats
         ], 201);
 
     } catch (Exception $e) {
