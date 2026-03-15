@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuestLog - Itinerary Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Bree+Serif&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- PDF Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        html {
+            background: url('assets/background_balitemple.png') no-repeat center center fixed;
+            background-size: cover;
+            background-color: #000;
+            min-height: 100%;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            color: #fff;
+            min-height: 100vh;
+            background: transparent;
+        }
+        .fixed-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(8, 8, 12, 0.82);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: -1;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 40px;
+            background: rgba(15, 15, 20, 0.7);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(218, 165, 32, 0.2);
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Weather UI */
+        .weather-info {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+            margin-left: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Smart Reminders */
+        .reminders-area {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .reminder-card {
+            background: rgba(218, 165, 32, 0.15);
+            border-left: 4px solid #daa520;
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #f1c40f;
+            animation: fadeIn 0.5s ease;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(218, 165, 32, 0.3);
+            padding-bottom: 25px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        header h1 {
+            font-family: 'Bree Serif', serif;
+            font-size: 2.8rem;
+            margin: 0;
+            background: linear-gradient(135deg, #fff 0%, #daa520 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #daa520 0%, #b8860b 100%);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.9rem;
+        }
+        .btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(218, 165, 32, 0.4); }
+        .btn-secondary { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .btn-danger { background: rgba(255, 107, 107, 0.15); color: #ff6b6b; border: 1px solid rgba(255, 107, 107, 0.3); }
+        .btn-export { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: #fff; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .stat-box { background: rgba(0, 0, 0, 0.4); padding: 25px; border-radius: 20px; text-align: center; border: 1px solid rgba(218, 165, 32, 0.15); }
+        .stat-label { font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 8px; font-weight: 600; }
+        .stat-value { font-size: 1.8rem; font-weight: 800; color: #daa520; font-family: 'Bree Serif', serif; }
+        .progress-container { margin: 15px auto 0; height: 10px; background: rgba(255, 255, 255, 0.1); border-radius: 5px; overflow: hidden; width: 80%; }
+        .progress-bar { height: 100%; background: linear-gradient(90deg, #daa520, #4cd137); transition: width 1s ease; }
+
+        .conflict-warning { background: rgba(255, 107, 107, 0.1); border-left: 5px solid #ff6b6b; color: #ff8787; padding: 18px 25px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; }
+
+        .day-section { margin-bottom: 50px; }
+        .day-header { font-family: 'Bree Serif', serif; font-size: 2rem; color: #daa520; margin-bottom: 25px; display: flex; align-items: center; gap: 20px; }
+        .day-header::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(218, 165, 32, 0.4), transparent); }
+
+        .timeline { position: relative; padding-left: 40px; }
+        .timeline::before { content: ''; position: absolute; left: 5px; top: 0; bottom: 0; width: 3px; background: linear-gradient(180deg, #daa520, rgba(218, 165, 32, 0.1)); border-radius: 3px; }
+        .timeline-item { position: relative; margin-bottom: 25px; background: rgba(255, 255, 255, 0.03); padding: 20px 25px; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.05); transition: all 0.3s ease; }
+        .timeline-item:hover { background: rgba(255, 255, 255, 0.07); transform: translateX(10px); }
+        .timeline-item::before { content: ''; position: absolute; left: -42px; top: 25px; width: 16px; height: 16px; background: #daa520; border: 4px solid #1a1a1f; border-radius: 50%; z-index: 1; }
+
+        .item-time { font-weight: 700; color: #daa520; font-size: 0.95rem; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .item-type-tag { display: inline-block; padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; text-transform: uppercase; font-weight: 800; margin-left: 10px; }
+        .type-Transport { background: rgba(76, 209, 55, 0.2); color: #4cd137; }
+        .type-Hotel { background: rgba(0, 168, 255, 0.2); color: #00a8ff; }
+        .type-Activity { background: rgba(156, 136, 255, 0.2); color: #9c88ff; }
+        .type-Buffer { background: rgba(255, 255, 255, 0.1); color: #fff; }
+
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 2000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: #1a1a1f; padding: 40px; border-radius: 25px; width: 90%; max-width: 550px; border: 1px solid rgba(218, 165, 32, 0.4); }
+
+        /* AI SUGGESTION UI */
+        .smart-input-container { position: relative; width: 100%; }
+        .suggestion-list { 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: #1a1a1f; border: 1px solid #daa520; 
+            border-radius: 0 0 12px 12px; z-index: 10; max-height: 200px; 
+            overflow-y: auto; display: none; margin-top: -20px;
+        }
+        .suggestion-item { padding: 12px 18px; cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; }
+        .suggestion-item:hover { background: rgba(218, 165, 32, 0.2); }
+        .suggestion-item span { color: #4cd137; float: right; font-weight: 700; }
+
+        input, select, textarea { width: 100%; padding: 14px 18px; background: rgba(0,0,0,0.4); border: 1px solid rgba(218, 165, 32, 0.2); border-radius: 12px; color: #fff; margin-bottom: 20px; font-family: 'Poppins'; }
+        input:focus { border-color: #daa520; outline: none; }
+    </style>
+</head>
+<body>
+    <div class="fixed-overlay"></div>
+    <div class="container">
+        <header>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <a href="tourist-dashboard.html" class="btn btn-secondary">← Back</a>
+                <h1 id="itineraryTitle">Trip Plan</h1>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button onclick="exportToPDF()" class="btn btn-export">📄 Export Plan</button>
+                <button onclick="syncBookings()" class="btn" style="background: linear-gradient(135deg, #4cd137 0%, #44bd32 100%);">Sync Bookings</button>
+                <button onclick="openAddItemModal()" class="btn">+ Add Activity</button>
+                <button onclick="deleteItinerary()" class="btn btn-danger">Delete Trip</button>
+            </div>
+        </header>
+
+        <div id="remindersArea" class="reminders-area"></div>
+        <div id="conflictArea"></div>
+
+        <div class="stats-grid">
+            <div class="stat-box">
+                <div class="stat-label">Initial Budget</div>
+                <div class="stat-value" id="itBudget">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Expenses</div>
+                <div class="stat-value" style="color: #ff6b6b;" id="itTotalCost">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Remaining Budget</div>
+                <div class="stat-value" id="itRemaining">$0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Trip Readiness</div>
+                <div class="stat-value" id="itScore">0%</div>
+                <div class="progress-container"><div class="progress-bar" id="scoreBar" style="width: 0%"></div></div>
+            </div>
+        </div>
+        <div id="timelineContainer"></div>
+    </div>
+
+    <!-- Modals -->
+    <div id="addItemModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #daa520; margin-top:0;">✨ Smart Activity Planner</h3>
+            <form id="addItemForm">
+                <label>Day</label>
+                <select id="itemDay" required></select>
+                <label>What are you planning?</label>
+                <div class="smart-input-container">
+                    <input type="text" id="itemTitle" placeholder="Start typing (e.g. Visit Museum)..." autocomplete="off" onfocus="showSuggestions()" oninput="filterSuggestions()">
+                    <div id="suggestionList" class="suggestion-list"></div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <div style="flex:1;"><label>Start Time</label><input type="time" id="itemStartTime"></div>
+                    <div style="flex:1;"><label>End Time</label><input type="time" id="itemEndTime"></div>
+                </div>
+                <label>Estimated Cost ($)</label>
+                <input type="number" id="itemCost" value="0" step="0.01">
+                <label>Notes</label>
+                <textarea id="itemNotes" rows="3" placeholder="Add details..."></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn" style="flex: 1;">Add to Timeline</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const itineraryId = urlParams.get('id');
+        let currentItinerary = null;
+        let aiSuggestions = [];
+
+        if (!itineraryId) window.location.href = 'tourist-dashboard.html';
+
+        async function fetchItineraryDetails() {
+            try {
+                const res = await fetch(`api/tourist/itinerary.php?id=${itineraryId}`);
+                const result = await res.json();
+                if (result.success) {
+                    currentItinerary = result.data;
+                    renderItinerary(result.data);
+                    loadAISuggestions();
+                    generateSmartReminders(result.data);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadAISuggestions() {
+            try {
+                const res = await fetch('api/tourist/itinerary.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_suggestions', itinerary_id: itineraryId })
+                });
+                const result = await res.json();
+                if (result.success) aiSuggestions = result.data;
+            } catch (e) { console.error(e); }
+        }
+
+        function generateSmartReminders(it) {
+            const area = document.getElementById('remindersArea');
+            area.innerHTML = '';
+            const today = new Date().toISOString().split('T')[0];
+            
+            it.days.forEach(day => {
+                (day.items || []).forEach(item => {
+                    if (item.item_type === 'Transport' || item.item_type === 'Hotel') {
+                        const reminder = document.createElement('div');
+                        reminder.className = 'reminder-card';
+                        const icon = item.item_type === 'Transport' ? '✈️' : '🏨';
+                        reminder.innerHTML = `<span>${icon}</span> <span>Upcoming: ${item.title} on ${new Date(day.date).toLocaleDateString()} at ${item.start_time || 'Anytime'}</span>`;
+                        area.appendChild(reminder);
+                    }
+                });
+            });
+        }
+
+        function getSimulatedWeather(dayIndex) {
+            const weathers = [
+                { icon: '☀️', temp: '24°C', desc: 'Sunny' },
+                { icon: '⛅', temp: '22°C', desc: 'Partly Cloudy' },
+                { icon: '🌧️', temp: '18°C', desc: 'Light Rain' },
+                { icon: '☁️', temp: '20°C', desc: 'Cloudy' },
+                { icon: '🌤️', temp: '25°C', desc: 'Mostly Sunny' }
+            ];
+            return weathers[dayIndex % weathers.length];
+        }
+
+        function renderItinerary(it) {
+            const budget = parseFloat(it.budget) || 0;
+            const cost = parseFloat(it.total_cost) || 0;
+            const remaining = budget - cost;
+
+            document.getElementById('itineraryTitle').textContent = it.trip_name;
+            document.getElementById('itBudget').textContent = `$${budget.toLocaleString()}`;
+            document.getElementById('itTotalCost').textContent = `$${cost.toLocaleString()}`;
+            const remEl = document.getElementById('itRemaining');
+            remEl.textContent = `$${remaining.toLocaleString()}`;
+            remEl.style.color = remaining < 0 ? '#ff6b6b' : '#4cd137';
+
+            document.getElementById('itScore').textContent = `${it.planning_score}%`;
+            document.getElementById('scoreBar').style.width = `${it.planning_score}%`;
+
+            const conflictArea = document.getElementById('conflictArea');
+            conflictArea.innerHTML = '';
+            (it.conflicts || []).forEach(msg => { conflictArea.innerHTML += `<div class="conflict-warning">⚠️ ${msg}</div>`; });
+
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+            const daySelect = document.getElementById('itemDay');
+            daySelect.innerHTML = '';
+
+            it.days.forEach((day, idx) => {
+                const opt = document.createElement('option');
+                opt.value = day.id;
+                opt.textContent = `Day ${day.day_number} (${day.date})`;
+                daySelect.appendChild(opt);
+
+                const weather = getSimulatedWeather(idx);
+                const daySection = document.createElement('div');
+                daySection.className = 'day-section';
+                
+                let itemsHtml = '';
+                (day.items || []).forEach(item => {
+                    itemsHtml += `
+                        <div class="timeline-item">
+                            <div class="item-time">
+                                <span>
+                                    ${item.start_time ? item.start_time.substring(0, 5) : 'Anytime'}
+                                    <span class="item-type-tag type-${item.item_type}">${item.item_type}</span>
+                                </span>
+                                <button onclick="deleteItem(${item.id})" style="background:none; border:none; color:#ff6b6b; cursor:pointer; font-size:1.1rem;" title="Delete">✕</button>
+                            </div>
+                            <div class="item-title">${item.title}</div>
+                            ${item.notes ? `<div class="item-notes">${item.notes}</div>` : ''}
+                            ${item.cost > 0 ? `<div style="font-size: 0.85rem; color: #daa520; margin-top:8px; font-weight:600;">Cost: $${item.cost}</div>` : ''}
+                        </div>`;
+                });
+
+                daySection.innerHTML = `
+                    <div class="day-header">
+                        Day ${day.day_number} - ${new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        <div class="weather-info" title="${weather.desc}">${weather.icon} ${weather.temp}</div>
+                    </div>
+                    <div class="timeline">${itemsHtml || '<p style="color: rgba(255,255,255,0.2); padding-left: 20px;">No plans yet.</p>'}</div>`;
+                container.appendChild(daySection);
+            });
+        }
+
+        async function exportToPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const it = currentItinerary;
+
+            doc.setFontSize(22);
+            doc.text(`QuestLog Travel Plan: ${it.trip_name}`, 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Destination: ${it.destination}`, 14, 30);
+            doc.text(`Dates: ${it.start_date} to ${it.end_date}`, 14, 37);
+            doc.text(`Total Expenses: $${it.total_cost}`, 14, 44);
+
+            let startY = 55;
+            it.days.forEach(day => {
+                doc.setFontSize(14);
+                doc.setTextColor(218, 165, 32);
+                doc.text(`Day ${day.day_number} (${day.date})`, 14, startY);
+                startY += 7;
+
+                const body = (day.items || []).map(i => [i.start_time || 'Anytime', i.item_type, i.title, `$${i.cost}`]);
+                if (body.length > 0) {
+                    doc.autoTable({
+                        startY: startY,
+                        head: [['Time', 'Type', 'Activity', 'Cost']],
+                        body: body,
+                        theme: 'grid',
+                        headStyles: { fillColor: [218, 165, 32] }
+                    });
+                    startY = doc.lastAutoTable.finalY + 10;
+                } else {
+                    doc.setFontSize(10);
+                    doc.setTextColor(100);
+                    doc.text("No activities planned.", 14, startY);
+                    startY += 10;
+                }
+                if (startY > 250) { doc.addPage(); startY = 20; }
+            });
+
+            doc.save(`${it.trip_name}_QuestLog_Plan.pdf`);
+        }
+
+        function showSuggestions() {
+            const list = document.getElementById('suggestionList');
+            if (aiSuggestions.length > 0) {
+                renderSuggestions(aiSuggestions);
+                list.style.display = 'block';
+            }
+        }
+
+        function filterSuggestions() {
+            const val = document.getElementById('itemTitle').value.toLowerCase();
+            const filtered = aiSuggestions.filter(s => s.activity_name.toLowerCase().includes(val));
+            renderSuggestions(filtered);
+        }
+
+        function renderSuggestions(data) {
+            const list = document.getElementById('suggestionList');
+            list.innerHTML = '';
+            data.forEach(s => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerHTML = `${s.activity_name} <span>$${s.price}</span>`;
+                div.onclick = () => {
+                    document.getElementById('itemTitle').value = s.activity_name;
+                    document.getElementById('itemCost').value = s.price;
+                    list.style.display = 'none';
+                };
+                list.appendChild(div);
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.smart-input-container')) {
+                document.getElementById('suggestionList').style.display = 'none';
+            }
+        });
+
+        async function syncBookings() {
+            const res = await fetch('api/tourist/itinerary.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'sync_bookings', itinerary_id: itineraryId })
+            });
+            if ((await res.json()).success) { alert('Synced!'); fetchItineraryDetails(); }
+        }
+
+        function openAddItemModal() { document.getElementById('addItemModal').classList.add('active'); }
+        function closeModal() { document.getElementById('addItemModal').classList.remove('active'); }
+
+        document.getElementById('addItemForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const payload = {
+                action: 'add_item',
+                itinerary_id: itineraryId,
+                day_id: document.getElementById('itemDay').value,
+                title: document.getElementById('itemTitle').value,
+                start_time: document.getElementById('itemStartTime').value || null,
+                end_time: document.getElementById('itemEndTime').value || null,
+                cost: document.getElementById('itemCost').value || 0,
+                notes: document.getElementById('itemNotes').value
+            };
+            const res = await fetch('api/tourist/itinerary.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if ((await res.json()).success) { closeModal(); fetchItineraryDetails(); }
+        });
+
+        async function deleteItem(itemId) {
+            if (!confirm('Remove activity?')) return;
+            const res = await fetch('api/tourist/itinerary.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_item', item_id: itemId, itinerary_id: itineraryId })
+            });
+            if ((await res.json()).success) fetchItineraryDetails();
+        }
+
+        async function deleteItinerary() {
+            if (!confirm('Delete trip?')) return;
+            const res = await fetch('api/tourist/itinerary.php', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_itinerary', itinerary_id: itineraryId })
+            });
+            if ((await res.json()).success) window.location.href = 'tourist-dashboard.html';
+        }
+
+        fetchItineraryDetails();
+    </script>
+</body>
+</html>

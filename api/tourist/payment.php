@@ -4,6 +4,7 @@
 require_once '../../config/db.php';
 require_once '../../includes/utils.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/itinerary_utils.php';
 
 handleCors();
 requireLogin();
@@ -66,6 +67,9 @@ try {
     // error_log("Sending confirmation email for booking #$booking_id to user #$user_id with transaction #$transaction_id");
 
     $pdo->commit();
+
+    // Trigger Itinerary Sync
+    syncBookingToItinerary($pdo, $booking_id);
 
     sendJsonResponse(true, 'Payment successful!', [
         'transaction_id' => $transaction_id,

@@ -4,6 +4,7 @@
 require_once '../../config/db.php';
 require_once '../../includes/utils.php';
 require_once '../../includes/auth.php';
+require_once '../../includes/itinerary_utils.php';
 
 handleCors();
 requireLogin();
@@ -80,6 +81,10 @@ try {
             }
             $pdo->prepare("UPDATE bookings SET booking_status = 'Cancelled', payment_status = 'Refunded' WHERE id = ?")->execute([$booking_id]);
             $pdo->commit();
+
+            // Sync to Itinerary
+            cancelBookingInItinerary($pdo, $booking_id);
+
             sendJsonResponse(true, 'All passengers cancelled. Entire booking has been cancelled.', ['full_cancel' => true], 200);
         }
 
@@ -107,6 +112,9 @@ try {
         // For now, we'll just mark payment_status as 'Refunded'.
 
         $pdo->commit();
+
+        // Sync to Itinerary
+        cancelBookingInItinerary($pdo, $booking_id);
 
         sendJsonResponse(true, 'Booking cancelled successfully. Inventory restored.', ['full_cancel' => true], 200);
     }

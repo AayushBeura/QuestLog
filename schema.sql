@@ -91,23 +91,54 @@ CREATE TABLE IF NOT EXISTS itineraries (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     trip_name VARCHAR(255) NOT NULL,
+    source VARCHAR(255) DEFAULT NULL,
     destination VARCHAR(255) NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     total_cost DECIMAL(10, 2) DEFAULT 0.00,
+    budget DECIMAL(10, 2) DEFAULT 0.00,
+    status ENUM('Upcoming', 'Ongoing', 'Completed') DEFAULT 'Upcoming',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- Itinerary Items Table
+-- Itinerary Days Table
+CREATE TABLE IF NOT EXISTS itinerary_days (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    itinerary_id INT NOT NULL,
+    day_number INT NOT NULL,
+    date DATE NOT NULL,
+    FOREIGN KEY (itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE
+);
+
+-- Itinerary Items Table (Timeline)
 CREATE TABLE IF NOT EXISTS itinerary_items (
     id INT AUTO_INCREMENT PRIMARY KEY,
     itinerary_id INT NOT NULL,
+    day_id INT NOT NULL,
     item_type ENUM('Transport', 'Hotel', 'Activity') NOT NULL,
-    item_id INT, -- Nullable, joins with Bookings table
+    booking_id INT DEFAULT NULL, -- Links to bookings table if applicable
+    title VARCHAR(255) NOT NULL,
+    start_time TIME DEFAULT NULL,
+    end_time TIME DEFAULT NULL,
     notes TEXT,
     cost DECIMAL(10, 2) DEFAULT 0.00,
-    FOREIGN KEY (itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE
+    FOREIGN KEY (itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE,
+    FOREIGN KEY (day_id) REFERENCES itinerary_days(id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES bookings(id) ON DELETE SET NULL
+);
+
+-- Activities Table (Optional, can also use itinerary_items)
+CREATE TABLE IF NOT EXISTS activities (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    itinerary_id INT NOT NULL,
+    day_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    time TIME,
+    cost DECIMAL(10, 2) DEFAULT 0.00,
+    notes TEXT,
+    FOREIGN KEY (itinerary_id) REFERENCES itineraries(id) ON DELETE CASCADE,
+    FOREIGN KEY (day_id) REFERENCES itinerary_days(id) ON DELETE CASCADE
 );
 
 -- Reviews Table
