@@ -7,16 +7,37 @@ const os = require("os")
 
 function getLocalIpAddress() {
     const interfaces = os.networkInterfaces();
+    
+    // First, try to find a Wi-Fi or WLAN interface specifically
+    for (const name of Object.keys(interfaces)) {
+        if (name.toLowerCase().includes('wi-fi') || name.toLowerCase().includes('wlan') || name.toLowerCase().includes('wireless')) {
+            for (const iface of interfaces[name]) {
+                if (iface.family === 'IPv4' && !iface.internal) {
+                    return iface.address;
+                }
+            }
+        }
+    }
+
+    // Fallback: get the first IPv4 address that is not a known virtual/internal adapter
     let bestIp = '127.0.0.1';
     for (const name of Object.keys(interfaces)) {
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
-                if (iface.address.startsWith('192.168.1.')) return iface.address;
-                if (!iface.address.startsWith('192.168.56.')) bestIp = iface.address;
+                const nameLower = name.toLowerCase();
+                if (!nameLower.includes('vmware') && 
+                    !nameLower.includes('virtual') &&
+                    !nameLower.includes('vethernet') &&
+                    !nameLower.includes('wsl') &&
+                    !iface.address.startsWith('169.254.') &&
+                    !iface.address.startsWith('192.168.56.')) {
+                    bestIp = iface.address;
+                }
             }
         }
     }
-    return bestIp !== '127.0.0.1' ? bestIp : '192.168.1.6';
+    
+    return bestIp;
 }
 
 const app = express()
