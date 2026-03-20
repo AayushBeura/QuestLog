@@ -1,4 +1,5 @@
 # QuestLog – Smart Itinerary Management Module
+By - Aayush Beura, Ashmit Mandal, Sumia Yasmin, Nafisa Hasan, and Sneha Sinha 
 
 ## Overview
 
